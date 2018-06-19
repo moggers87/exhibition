@@ -111,9 +111,6 @@ class Config:
         return klass(self._base_config.copy(), self.parent)
 
 
-settings = Config(open(SITE_YAML_PATH))
-
-
 class Node:
     _meta_names = ["meta.yaml", "meta.yml"]
     _index_file = "index.html"
@@ -145,7 +142,7 @@ class Node:
     @property
     def full_path(self):
         if self.parent is None:
-            return settings["deploy_path"]
+            return self.meta["deploy_path"]
         else:
             return str(pathlib.Path(self.parent.full_path, self.path_obj.name))
 
@@ -153,7 +150,7 @@ class Node:
     def full_url(self):
         """Get full URL for node, including trailing slash"""
         if self.parent is None:
-            base_url = settings["base_url"]
+            base_url = self.meta["base_url"]
             if not base_url.startswith("/"):
                 base_url = "/" + base_url
             if not base_url.endswith("/"):
@@ -301,6 +298,8 @@ class Node:
 
 
 def gen():
+    settings = Config(open(SITE_YAML_PATH))
+
     shutil.rmtree(settings["deploy_path"], True)
     root_node = Node.from_path(pathlib.Path(settings["content_path"]), meta=settings)
 
