@@ -19,16 +19,33 @@
 #
 ##
 
+import logging
+
 import click
 
-from exhibition.main import gen
+from exhibition import main
+
+
+logger = logging.getLogger("exhibition")
 
 
 @click.group()
-def exhibition():
-    pass
+@click.option("-v", "--verbose", count=True)
+def exhibition(verbose):
+    logger.addHandler(logging.StreamHandler())
+    if verbose > 1:
+        logger.setLevel(logging.DEBUG)
+    elif verbose == 1:
+        logger.setLevel(logging.INFO)
+    else:
+        logger.setLevel(logging.WARN)
 
 
 @exhibition.command()
-def generate():
-    gen()
+def gen():
+    main.gen()
+
+
+@exhibition.command()
+def serve():
+    main.serve()

@@ -19,9 +19,11 @@
 #
 ##
 
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 from importlib import import_module
 import io
 import json
+import logging
 import os
 import pathlib
 import re
@@ -29,6 +31,7 @@ import shutil
 
 from ruamel.yaml import YAML
 
+logger = logging.getLogger("exhibition")
 
 SITE_YAML_PATH = "site.yaml"
 
@@ -304,5 +307,28 @@ def gen():
     root_node = Node.from_path(pathlib.Path(settings["content_path"]), meta=settings)
 
     for item in root_node.walk(True):
-        print(item.full_url)
+        logger.info("Rendering %s", item.full_url)
         item.render()
+
+
+def serve():
+    logger = logging.getLogger("exhibition.server")
+    settings = Config(open(SITE_YAML_PATH))
+
+    class ExhibitionHTTPRequestHandler(SimpleHTTPRequestHandler):
+        def translate_path(self, path):
+            path = path.strip("/")
+            if settings.get("base_url"):
+                base = settings["base_url"].strip("/")
+                path = path.lstrip(base).strip("/")
+
+            path = os.path.join(settings["deploy_path"], path)
+
+            return path
+
+    server_address = ('localhost', 8000)
+
+    httpd = HTTPServer(server_address, ExhibitionHTTPRequestHandler)
+
+    logger.warning("Listening on http://%s:%s", *server_address)
+    httpd.serve_forever()
