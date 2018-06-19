@@ -23,7 +23,13 @@ setup(
         "Programming Language :: Python :: 3.6",
     ],
     install_requires=[
+        "click",
         "jinja2",
-        "ruamel-yaml",
-    ]
+        "ruamel.yaml",
+    ],
+    entry_points={
+        "console_scripts": [
+            "exhibit = exhibition.command:exhibition",
+        ]
+    },
 )

@@ -306,7 +306,3 @@ def gen():
     for item in root_node.walk(True):
         print(item.full_url)
         item.render()
-
-
-if __name__ == "__main__":
-    gen()
