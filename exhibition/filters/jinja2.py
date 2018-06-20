@@ -55,6 +55,7 @@ def content_filter(node, content):
     env = Environment(
         loader=FileSystemLoader(node.meta["templates"]),
         extensions=[RaiseError],
+        autoescape=True,
     )
     parts = []
 
