@@ -43,9 +43,16 @@ def exhibition(verbose):
 
 @exhibition.command()
 def gen():
-    main.gen()
+    settings = main.Config.from_path(main.SITE_YAML_PATH)
+    main.gen(settings)
 
 
 @exhibition.command()
 def serve():
-    main.serve()
+    settings = main.Config.from_path(main.SITE_YAML_PATH)
+    httpd, thread = main.serve(settings)
+
+    try:
+        thread.join()
+    except (KeyboardInterrupt, SystemExit):
+        httpd.shutdown()

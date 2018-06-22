@@ -28,6 +28,7 @@ import os
 import pathlib
 import re
 import shutil
+import threading
 
 from ruamel.yaml import YAML
 
@@ -58,6 +59,13 @@ class Config:
             self._base_config.update(data)
         else:
             raise AssertionError("data needs to be a string, file-like, or dict-like object")
+
+    @classmethod
+    def from_path(cls, path):
+        with open(path) as f:
+            obj = cls(f)
+
+        return obj
 
     def __getitem__(self, key):
         try:
@@ -300,9 +308,7 @@ class Node:
         return node
 
 
-def gen():
-    settings = Config(open(SITE_YAML_PATH))
-
+def gen(settings):
     shutil.rmtree(settings["deploy_path"], True)
     root_node = Node.from_path(pathlib.Path(settings["content_path"]), meta=settings)
 
@@ -311,9 +317,8 @@ def gen():
         item.render()
 
 
-def serve():
+def serve(settings):
     logger = logging.getLogger("exhibition.server")
-    settings = Config(open(SITE_YAML_PATH))
 
     class ExhibitionHTTPRequestHandler(SimpleHTTPRequestHandler):
         def translate_path(self, path):
@@ -331,4 +336,7 @@ def serve():
     httpd = HTTPServer(server_address, ExhibitionHTTPRequestHandler)
 
     logger.warning("Listening on http://%s:%s", *server_address)
-    httpd.serve_forever()
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+
+    return (httpd, t)
