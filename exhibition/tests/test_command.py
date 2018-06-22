@@ -24,25 +24,47 @@ import logging
 
 from click.testing import CliRunner
 
-from exhibition import command
+from exhibition import command, main
 
 
 class CommandTestCase(TestCase):
     @mock.patch("exhibition.command.main.gen")
-    def test_gen(self, gen_mock):
+    @mock.patch("exhibition.command.main.Config.from_path", return_value=main.Config())
+    def test_gen(self, config_mock, gen_mock):
         runner = CliRunner()
         result = runner.invoke(command.exhibition, ["gen"])
 
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(gen_mock.call_count, 1)
+        self.assertEqual(gen_mock.call_args, ((config_mock.return_value,), {}))
 
-    @mock.patch("exhibition.command.main.serve")
-    def test_serve(self, serve_mock):
+        self.assertEqual(config_mock.call_args, ((main.SITE_YAML_PATH,), {}))
+
+    @mock.patch("exhibition.command.main.serve", return_value=(mock.Mock(), mock.Mock()))
+    @mock.patch("exhibition.command.main.Config.from_path", return_value=main.Config())
+    def test_serve(self, config_mock, serve_mock):
         runner = CliRunner()
         result = runner.invoke(command.exhibition, ["serve"])
 
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(serve_mock.call_count, 1)
+        self.assertEqual(serve_mock.call_args, ((config_mock.return_value,), {}))
+
+        self.assertEqual(config_mock.call_args, ((main.SITE_YAML_PATH,), {}))
+        self.assertEqual(serve_mock.return_value[0].shutdown.call_count, 0)
+        self.assertEqual(serve_mock.return_value[1].join.call_count, 1)
+
+        serve_mock.return_value[1].join.side_effect = KeyboardInterrupt
+        # this time with a simulated keyboard interrupt
+        result = runner.invoke(command.exhibition, ["serve"])
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(serve_mock.call_count, 2)
+        self.assertEqual(serve_mock.call_args, ((config_mock.return_value,), {}))
+
+        self.assertEqual(config_mock.call_args, ((main.SITE_YAML_PATH,), {}))
+        self.assertEqual(serve_mock.return_value[0].shutdown.call_count, 1)
+        self.assertEqual(serve_mock.return_value[1].join.call_count, 2)
+
 
     @mock.patch.object(command, "logger")
     def test_exhibition(self, log_mock):

@@ -19,4 +19,48 @@
 #
 ##
 
+from tempfile import TemporaryDirectory
 from unittest import TestCase, mock
+import os
+
+INDEX_CONTENTS = """<html>
+    <head>
+        <title>Hello</title>
+    </head>
+    <body>
+        Hello world!
+    </body>
+</html>
+"""
+
+CSS_CONTENTS = """// CSS file
+html, body {
+    color: black;
+    background-color: white;
+}
+"""
+
+class ServeTestCase(TestCase):
+    def setUp(self):
+        self.tmp_dir = TemporaryDirectory()
+
+        with open(os.path.join(self.tmp_dir.name, "index.html"), "w") as index:
+            index.write(INDEX_CONTENTS)
+
+        with open(os.path.join(self.tmp_dir.name, "style.css"), "w") as css:
+            css.write(CSS_CONTENTS)
+
+    def tearDown(self):
+        self.tmp_dir.cleanup()
+
+    def test_fetch_file(self):
+        paqwertysqwerty 
+
+    def test_fetch_file_with_prefix(self):
+        pass
+
+    def test_index(self):
+        pass
+
+    def test_404(self):
+        pass
