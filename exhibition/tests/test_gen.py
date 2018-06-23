@@ -19,4 +19,45 @@
 #
 ##
 
+from tempfile import TemporaryDirectory
 from unittest import TestCase, mock
+import os
+import pathlib
+
+from exhibition.main import gen, Config
+
+
+class GenTestCase(TestCase):
+    def test_clean_deploy_dir(self):
+        with TemporaryDirectory() as deploy, TemporaryDirectory() as content:
+            settings = Config({"deploy_path": deploy, "content_path": content})
+            old_file = os.path.join(deploy, "someoldfile")
+            open(old_file, "w").write("content!")
+
+            # file exists and then is deleted during site generation
+            self.assertTrue(os.path.exists(old_file))
+            gen(settings)
+            self.assertFalse(os.path.exists(old_file))
+
+    def test_walk_nodes(self):
+        files = [
+            "blog/index.html",
+            "blog/post.html",
+            "index.html",
+            "style.css",
+        ]
+        dirs = ["blog"]
+        with TemporaryDirectory() as deploy, TemporaryDirectory() as content:
+            settings = Config({"deploy_path": deploy, "content_path": content})
+            for d in dirs:
+                pathlib.Path(content, d).mkdir()
+
+            for f in files:
+                pathlib.Path(content, f).touch()
+
+            gen(settings)
+
+            for item in files + dirs:
+                with self.subTest("%s exists in %s" % (item, deploy)):
+                    self.assertTrue(pathlib.Path(deploy, item).exists())
+

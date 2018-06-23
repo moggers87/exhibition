@@ -161,7 +161,7 @@ class Node:
     def full_url(self):
         """Get full URL for node, including trailing slash"""
         if self.parent is None:
-            base_url = self.meta["base_url"]
+            base_url = self.meta.get("base_url", "/")
             if not base_url.startswith("/"):
                 base_url = "/" + base_url
             if not base_url.endswith("/"):
@@ -325,6 +325,8 @@ def serve(settings):
             path = path.strip("/")
             if settings.get("base_url"):
                 base = settings["base_url"].strip("/")
+                if not path.startswith(base):
+                    return ""
                 path = path.lstrip(base).strip("/")
 
             path = os.path.join(settings["deploy_path"], path)

@@ -19,9 +19,13 @@
 #
 ##
 
+from http.client import HTTPConnection
 from tempfile import TemporaryDirectory
 from unittest import TestCase, mock
 import os
+
+from exhibition.main import Config, serve
+
 
 INDEX_CONTENTS = """<html>
     <head>
@@ -40,6 +44,7 @@ html, body {
 }
 """
 
+
 class ServeTestCase(TestCase):
     def setUp(self):
         self.tmp_dir = TemporaryDirectory()
@@ -50,17 +55,56 @@ class ServeTestCase(TestCase):
         with open(os.path.join(self.tmp_dir.name, "style.css"), "w") as css:
             css.write(CSS_CONTENTS)
 
+        self.client = HTTPConnection("localhost", "8000")
+
     def tearDown(self):
         self.tmp_dir.cleanup()
+        self.client.close()
+        self.server.shutdown()
+        self.server.server_close()
+
+    def get_server(self, settings):
+        httpd, thread = serve(settings)
+        self.server = httpd
 
     def test_fetch_file(self):
-        paqwertysqwerty 
+        settings = Config({"deploy_path": self.tmp_dir.name})
+        self.get_server(settings)
+
+        self.client.request("GET", "/style.css")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 200)
+        content = response.read()
+        self.assertEqual(content, CSS_CONTENTS.encode())
 
     def test_fetch_file_with_prefix(self):
-        pass
+        settings = Config({"deploy_path": self.tmp_dir.name, "base_url": "/bob/"})
+        self.get_server(settings)
+
+        self.client.request("GET", "/bob/style.css")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 200)
+        content = response.read()
+        self.assertEqual(content, CSS_CONTENTS.encode())
+
+        self.client.request("GET", "/style.css")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 404)
 
     def test_index(self):
-        pass
+        settings = Config({"deploy_path": self.tmp_dir.name})
+        self.get_server(settings)
+
+        self.client.request("GET", "/")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 200)
+        content = response.read()
+        self.assertEqual(content, INDEX_CONTENTS.encode())
 
     def test_404(self):
-        pass
+        settings = Config({"deploy_path": self.tmp_dir.name})
+        self.get_server(settings)
+
+        self.client.request("GET", "/not-existing.html")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 404)
