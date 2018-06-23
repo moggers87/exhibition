@@ -1,19 +1,19 @@
 ##
 #
 # Copyright (C) 2018 Matt Molyneaux
-# 
+#
 # This file is part of Exhibition.
-# 
+#
 # Exhibition is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Exhibition is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Exhibition.  If not, see <https://www.gnu.org/licenses/>.
 #
@@ -64,7 +64,6 @@ class CommandTestCase(TestCase):
         self.assertEqual(config_mock.call_args, ((main.SITE_YAML_PATH,), {}))
         self.assertEqual(serve_mock.return_value[0].shutdown.call_count, 1)
         self.assertEqual(serve_mock.return_value[1].join.call_count, 2)
-
 
     @mock.patch.object(command, "logger")
     def test_exhibition(self, log_mock):

@@ -1,19 +1,19 @@
 ##
 #
 # Copyright (C) 2018 Matt Molyneaux
-# 
+#
 # This file is part of Exhibition.
-# 
+#
 # Exhibition is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Exhibition is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Exhibition.  If not, see <https://www.gnu.org/licenses/>.
 #
@@ -26,7 +26,6 @@ import json
 import logging
 import os
 import pathlib
-import re
 import shutil
 import threading
 
@@ -198,7 +197,6 @@ class Node:
         file_obj = pathlib.Path(self.full_path)
         file_obj.touch(self._file_mode)
 
-
         content = self.get_content()
         content_filter = self.meta.get("filter")
 
@@ -249,8 +247,8 @@ class Node:
                 break
 
         self.meta.load(found_meta)
-        self._content_start = len(self._meta_header) + len(found_meta) + len(self._meta_footer)    
-                 
+        self._content_start = len(self._meta_header) + len(found_meta) + len(self._meta_footer)
+
     def get_content(self):
         self.process_meta()
         file_obj = self.path_obj.open("r")
@@ -286,7 +284,6 @@ class Node:
     def from_path(cls, path, parent=None, meta=None):
         # path should be a pathlib object
         assert path.is_file() or path.is_dir()
-
 
         node = cls(path, parent=parent, meta=meta)
 

@@ -1,26 +1,26 @@
 ##
 #
 # Copyright (C) 2018 Matt Molyneaux
-# 
+#
 # This file is part of Exhibition.
-# 
+#
 # Exhibition is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Exhibition is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Exhibition.  If not, see <https://www.gnu.org/licenses/>.
 #
 ##
 
 from tempfile import TemporaryDirectory
-from unittest import TestCase, mock
+from unittest import TestCase
 import os
 import pathlib
 
@@ -60,4 +60,3 @@ class GenTestCase(TestCase):
             for item in files + dirs:
                 with self.subTest("%s exists in %s" % (item, deploy)):
                     self.assertTrue(pathlib.Path(deploy, item).exists())
-
