@@ -95,7 +95,7 @@ class Config:
 
         if self.parent is not None:
             for k in self.parent.keys():
-                if k in _keys_set:
+                if k not in _keys_set:
                     _keys_set.add(k)
                     yield k
 
