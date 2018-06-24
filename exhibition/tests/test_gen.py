@@ -32,7 +32,8 @@ class GenTestCase(TestCase):
         with TemporaryDirectory() as deploy, TemporaryDirectory() as content:
             settings = Config({"deploy_path": deploy, "content_path": content})
             old_file = os.path.join(deploy, "someoldfile")
-            open(old_file, "w").write("content!")
+            with open(old_file, "w") as of:
+                of.write("content!")
 
             # file exists and then is deleted during site generation
             self.assertTrue(os.path.exists(old_file))
