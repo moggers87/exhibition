@@ -22,7 +22,6 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from importlib import import_module
 import io
-import json
 import logging
 import os
 import pathlib
@@ -39,7 +38,7 @@ yaml_parser = YAML(typ="safe")
 
 DATA_EXTRACTORS = {
     ".yaml": yaml_parser.load,
-    ".json": json.loads,
+    ".json": yaml_parser.load,
 }
 
 
@@ -145,6 +144,9 @@ class Node:
         self.meta = Config({}, getattr(self.parent, "meta", None))
         if meta:
             self.meta.update(meta)
+
+        if self.parent:
+            self.parent.add_child(self)
 
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self.path_obj.name)
@@ -275,6 +277,7 @@ class Node:
         return self._data
 
     def add_child(self, child):
+        assert child.parent == self
         self.children[child.path_obj.name] = child
 
     @property
@@ -302,7 +305,7 @@ class Node:
                     with child.open() as co:
                         node.meta.load(co)
                 else:
-                    node.add_child(cls.from_path(child, node))
+                    cls.from_path(child, node)
 
         return node
 
