@@ -27,9 +27,9 @@ from jinja2.nodes import CallBlock
 
 EXTENDS_TEMPLATE_TEMPLATE = """{%% extends "%s" %%}
 """
-START_BLOCK_TEMPLATE = """{%% block "%s" %%}
+START_BLOCK_TEMPLATE = """{%% block %s %%}
 """
-END_BLOCK_TEMPLATE = """{%% endblock %%}
+END_BLOCK_TEMPLATE = """{% endblock %}
 """
 
 DEFAULT_GLOB = "*.html"
@@ -62,11 +62,11 @@ def content_filter(node, content):
         parts.append(EXTENDS_TEMPLATE_TEMPLATE % node.meta["extends"])
 
     if node.meta.get("default-block"):
-        parts.extend(
+        parts.extend([
             START_BLOCK_TEMPLATE % node.meta["default-block"],
             content,
             END_BLOCK_TEMPLATE,
-        )
+        ])
     else:
         parts.append(content)
 
