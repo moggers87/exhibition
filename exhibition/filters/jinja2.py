@@ -19,6 +19,16 @@
 #
 ##
 
+"""
+Jinja2 template filter
+
+To use, add the following to your configuration file:
+
+.. code-block:: yaml
+
+   filter: exhibition.filters.jinja2
+"""
+
 from jinja2 import Environment, FileSystemLoader
 from jinja2.exceptions import TemplateRuntimeError
 from jinja2.ext import Extension
@@ -36,6 +46,13 @@ DEFAULT_GLOB = "*.html"
 
 
 class RaiseError(Extension):
+    """
+    Raise an exception during template rendering:
+
+    .. code-block:: jinja
+
+       {% raise "This is an error" %}
+    """
     tags = set(["raise"])
 
     def _raise_error(self, message, caller):
@@ -51,6 +68,15 @@ class RaiseError(Extension):
 
 
 def content_filter(node, content):
+    """
+    This is the actual content filter called by :class:`exhibition.main.Node`
+    on appropiate nodes.
+
+    :param node:
+        The node being rendered
+    :param content:
+        The content of the node, stripped of any YAML front matter
+    """
     env = Environment(
         loader=FileSystemLoader(node.meta["templates"]),
         extensions=[RaiseError],

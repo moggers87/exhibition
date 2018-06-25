@@ -43,7 +43,20 @@ DATA_EXTRACTORS = {
 
 
 class Config:
+    """
+    Configuration object that implements a dict-like interface
+
+    If a key cannot be found in this instance, the parent :class:`Config` will
+    be searched (and its parent, etc.)
+    """
     def __init__(self, data=None, parent=None):
+        """
+        :param data:
+            Can be one of a string, a file-like object, a dict-like object, or
+            ``None``. The first two will be assumed as YAML
+        :param parent:
+            Parent :class:`Config` or ``None`` if this is the root configuration object
+        """
         self.parent = parent
         self._base_config = {}
 
@@ -51,6 +64,16 @@ class Config:
             self.load(data)
 
     def load(self, data):
+        """
+        Load data into configutation object
+
+        :param data:
+            If a string or file-like object, ``data`` is parsed as if it were
+            YAML data. If a dict-like object, ``data`` is added to the internal
+            dictionary.
+
+            Otherwise an :class:`AssertionError` exception is raised
+        """
         if isinstance(data, (str, io.IOBase)):
             self._base_config.update(yaml_parser.load(data))
         elif isinstance(data, dict):
@@ -60,6 +83,7 @@ class Config:
 
     @classmethod
     def from_path(cls, path):
+        """Load YAML data from a file"""
         with open(path) as f:
             obj = cls(f)
 
@@ -121,6 +145,9 @@ class Config:
 
 
 class Node:
+    """
+    A node represents a file or directory
+    """
     _meta_names = ["meta.yaml", "meta.yml"]
     _index_file = "index.html"
     _strip_exts = ["html"]
@@ -135,6 +162,14 @@ class Node:
     _data = None
 
     def __init__(self, path, parent, meta=None):
+        """
+        :param path:
+            A :class:`pathlib.Path` that is either the ``content_path`` or a child of it.
+        :param parent:
+            Either another :class:`Node` or ``None``
+        :param meta:
+            A dict-like object that will be passed to a :class:`Config` instance
+        """
         self.path_obj = path
         self.parent = parent
         self.children = {}
@@ -148,11 +183,52 @@ class Node:
         if self.parent:
             self.parent.add_child(self)
 
+    @classmethod
+    def from_path(cls, path, parent=None, meta=None):
+        """
+        Given a :class:`pathlib.Path`, create a Node from that path as well as
+        any children
+
+        If the path is not a file or a dir, an :class:`AssertionError` is raised
+
+        :param path:
+            A :class:`pathlib.Path` that is either the ``content_path`` or a child of it.
+        :param parent:
+            Either another :class:`Node` or ``None``
+        :param meta:
+            A dict-like object that will be passed to a :class:`Config` instance
+        """
+        # path should be a pathlib object
+        assert path.is_file() or path.is_dir()
+
+        node = cls(path, parent=parent, meta=meta)
+
+        if path.is_dir():
+            for child in path.iterdir():
+                ignored = False
+                for glob in node.meta.get("ignore", []):
+                    if child in path.glob(glob):
+                        ignored = True
+                        break
+                if ignored:
+                    continue
+
+                if child.name in cls._meta_names and child.is_file():
+                    with child.open() as co:
+                        node.meta.load(co)
+                else:
+                    cls.from_path(child, node)
+
+        return node
+
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self.path_obj.name)
 
     @property
     def full_path(self):
+        """
+        Full path of node when deployed
+        """
         if self.parent is None:
             return self.meta["deploy_path"]
         else:
@@ -192,6 +268,11 @@ class Node:
                 yield grandchild
 
     def render(self):
+        """
+        Process node and either create the directory or write contents of file to ``deploy_path``
+
+        If ``filter`` has been specified in :attr:`meta`
+        """
         if not self.is_leaf:
             pathlib.Path(self.full_path).mkdir(self._dir_mode)
             return
@@ -213,13 +294,13 @@ class Node:
 
     def process_meta(self):
         """
-        Finds and processes the meta YAML from the top of a file
+        Finds and processes the YAML fonrt matter at the top of a file
 
-        If the file does not start with ---\n, then it's assumed the file does
-        not contain any meta YAML for us to process
+        If the file does not start with ``---\\n``, then it's assumed the file
+        does not contain any meta YAML for us to process
         """
         if self._content_start is not None:
-            # we've done with already
+            # we've done this already
             return
 
         found_header = False
@@ -253,6 +334,12 @@ class Node:
         self._content_start = len(self._meta_header) + len(found_meta) + len(self._meta_footer)
 
     def get_content(self):
+        """
+        Get the actual content of the Node
+
+        First calls :meth:`process_meta` to find the end any front matter that
+        might be present and then returns the rest of the file
+        """
         self.process_meta()
         with self.path_obj.open("r") as file_obj:
             file_obj.seek(self._content_start)
@@ -277,40 +364,27 @@ class Node:
         return self._data
 
     def add_child(self, child):
+        """
+        Add a child to the current Node
+
+        If the child doesn't already have its :attr:`parent` set to this Node,
+        then an :class:`AssertionError` is raised.
+        """
         assert child.parent == self
         self.children[child.path_obj.name] = child
 
     @property
     def siblings(self):
+        """Returns all children of the parent Node, except for itself"""
         return {k: v for k, v in self.parent.children.items() if v is not self}
-
-    @classmethod
-    def from_path(cls, path, parent=None, meta=None):
-        # path should be a pathlib object
-        assert path.is_file() or path.is_dir()
-
-        node = cls(path, parent=parent, meta=meta)
-
-        if path.is_dir():
-            for child in path.iterdir():
-                ignored = False
-                for glob in node.meta.get("ignore", []):
-                    if child in path.glob(glob):
-                        ignored = True
-                        break
-                if ignored:
-                    continue
-
-                if child.name in cls._meta_names and child.is_file():
-                    with child.open() as co:
-                        node.meta.load(co)
-                else:
-                    cls.from_path(child, node)
-
-        return node
 
 
 def gen(settings):
+    """
+    Generate site
+
+    Deletes ``deploy_path`` first.
+    """
     shutil.rmtree(settings["deploy_path"], True)
     root_node = Node.from_path(pathlib.Path(settings["content_path"]), meta=settings)
 
@@ -320,6 +394,11 @@ def gen(settings):
 
 
 def serve(settings):
+    """
+    Serves the generated site from ``deploy_path``
+
+    Respects settings like ``base_url`` if present.
+    """
     logger = logging.getLogger("exhibition.server")
 
     class ExhibitionHTTPRequestHandler(SimpleHTTPRequestHandler):
