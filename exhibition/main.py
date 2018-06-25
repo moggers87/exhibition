@@ -1,19 +1,19 @@
 ##
 #
 # Copyright (C) 2018 Matt Molyneaux
-# 
+#
 # This file is part of Exhibition.
-# 
+#
 # Exhibition is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # Exhibition is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Exhibition.  If not, see <https://www.gnu.org/licenses/>.
 #
@@ -22,12 +22,11 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from importlib import import_module
 import io
-import json
 import logging
 import os
 import pathlib
-import re
 import shutil
+import threading
 
 from ruamel.yaml import YAML
 
@@ -39,7 +38,7 @@ yaml_parser = YAML(typ="safe")
 
 DATA_EXTRACTORS = {
     ".yaml": yaml_parser.load,
-    ".json": json.loads,
+    ".json": yaml_parser.load,
 }
 
 
@@ -58,6 +57,13 @@ class Config:
             self._base_config.update(data)
         else:
             raise AssertionError("data needs to be a string, file-like, or dict-like object")
+
+    @classmethod
+    def from_path(cls, path):
+        with open(path) as f:
+            obj = cls(f)
+
+        return obj
 
     def __getitem__(self, key):
         try:
@@ -88,7 +94,7 @@ class Config:
 
         if self.parent is not None:
             for k in self.parent.keys():
-                if k in _keys_set:
+                if k not in _keys_set:
                     _keys_set.add(k)
                     yield k
 
@@ -139,6 +145,9 @@ class Node:
         if meta:
             self.meta.update(meta)
 
+        if self.parent:
+            self.parent.add_child(self)
+
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self.path_obj.name)
 
@@ -153,7 +162,7 @@ class Node:
     def full_url(self):
         """Get full URL for node, including trailing slash"""
         if self.parent is None:
-            base_url = self.meta["base_url"]
+            base_url = self.meta.get("base_url", "/")
             if not base_url.startswith("/"):
                 base_url = "/" + base_url
             if not base_url.endswith("/"):
@@ -190,7 +199,6 @@ class Node:
         file_obj = pathlib.Path(self.full_path)
         file_obj.touch(self._file_mode)
 
-
         content = self.get_content()
         content_filter = self.meta.get("filter")
 
@@ -200,7 +208,8 @@ class Node:
             if file_obj in file_obj.parent.glob(filter_glob):
                 content = filter_module.content_filter(self, content)
 
-        file_obj.open("w").write(content)
+        with file_obj.open("w") as fo:
+            fo.write(content)
 
     def process_meta(self):
         """
@@ -214,40 +223,40 @@ class Node:
             return
 
         found_header = False
-        file_obj = self.path_obj.open("r")
-        while True:
-            data = file_obj.read(100)
+        with self.path_obj.open("r") as file_obj:
+            while True:
+                data = file_obj.read(100)
 
-            if data == '':
-                # we've run out of file, either we didn't find a header or
-                # we're missing a footer
-                self._content_start = 0
-                return
-            elif not found_header:
-                if data.startswith(self._meta_header):
-                    found_header = True
-                    found_meta = data[len(self._meta_header):]
-                else:
-                    # if our token is not the first thing in the file, then
-                    # it's not for us
+                if data == '':
+                    # we've run out of file, either we didn't find a header or
+                    # we're missing a footer
                     self._content_start = 0
                     return
-            else:
-                found_meta += data
+                elif not found_header:
+                    if data.startswith(self._meta_header):
+                        found_header = True
+                        found_meta = data[len(self._meta_header):]
+                    else:
+                        # if our token is not the first thing in the file, then
+                        # it's not for us
+                        self._content_start = 0
+                        return
+                else:
+                    found_meta += data
 
-            if self._meta_footer in found_meta:
-                idx = found_meta.index(self._meta_footer)
-                found_meta = found_meta[:idx]
-                break
+                if self._meta_footer in found_meta:
+                    idx = found_meta.index(self._meta_footer)
+                    found_meta = found_meta[:idx]
+                    break
 
         self.meta.load(found_meta)
-        self._content_start = len(self._meta_header) + len(found_meta) + len(self._meta_footer)    
-                 
+        self._content_start = len(self._meta_header) + len(found_meta) + len(self._meta_footer)
+
     def get_content(self):
         self.process_meta()
-        file_obj = self.path_obj.open("r")
-        file_obj.seek(self._content_start)
-        return file_obj.read()
+        with self.path_obj.open("r") as file_obj:
+            file_obj.seek(self._content_start)
+            return file_obj.read()
 
     @property
     def data(self):
@@ -268,6 +277,7 @@ class Node:
         return self._data
 
     def add_child(self, child):
+        assert child.parent == self
         self.children[child.path_obj.name] = child
 
     @property
@@ -278,7 +288,6 @@ class Node:
     def from_path(cls, path, parent=None, meta=None):
         # path should be a pathlib object
         assert path.is_file() or path.is_dir()
-
 
         node = cls(path, parent=parent, meta=meta)
 
@@ -293,16 +302,15 @@ class Node:
                     continue
 
                 if child.name in cls._meta_names and child.is_file():
-                    node.meta.load(child.open())
+                    with child.open() as co:
+                        node.meta.load(co)
                 else:
-                    node.add_child(cls.from_path(child, node))
+                    cls.from_path(child, node)
 
         return node
 
 
-def gen():
-    settings = Config(open(SITE_YAML_PATH))
-
+def gen(settings):
     shutil.rmtree(settings["deploy_path"], True)
     root_node = Node.from_path(pathlib.Path(settings["content_path"]), meta=settings)
 
@@ -311,15 +319,16 @@ def gen():
         item.render()
 
 
-def serve():
+def serve(settings):
     logger = logging.getLogger("exhibition.server")
-    settings = Config(open(SITE_YAML_PATH))
 
     class ExhibitionHTTPRequestHandler(SimpleHTTPRequestHandler):
         def translate_path(self, path):
             path = path.strip("/")
             if settings.get("base_url"):
                 base = settings["base_url"].strip("/")
+                if not path.startswith(base):
+                    return ""
                 path = path.lstrip(base).strip("/")
 
             path = os.path.join(settings["deploy_path"], path)
@@ -331,4 +340,7 @@ def serve():
     httpd = HTTPServer(server_address, ExhibitionHTTPRequestHandler)
 
     logger.warning("Listening on http://%s:%s", *server_address)
-    httpd.serve_forever()
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+
+    return (httpd, t)

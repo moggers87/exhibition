@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 setup(
@@ -6,7 +6,8 @@ setup(
     version="0.1",
     author="Matt Molyneaux",
     author_email="moggers87+git@moggers87.co.uk",
-    packages=["exhibition"],
+    packages=find_packages(),
+    test_suite="exhibition.tests",
     license="GPLv3",
     classifiers=[
         "Topic :: Internet :: WWW/HTTP :: Site Management",
