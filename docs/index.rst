@@ -10,6 +10,7 @@ Welcome to Exhibition's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   getting-started
    commandline
    Exhibition API Guide <modules>
 
