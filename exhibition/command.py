@@ -19,6 +19,10 @@
 #
 ##
 
+"""
+Documentation for this module can be found in :doc:`commandline`
+"""
+
 import logging
 
 import click
@@ -30,7 +34,8 @@ logger = logging.getLogger("exhibition")
 
 
 @click.group()
-@click.option("-v", "--verbose", count=True)
+@click.option("-v", "--verbose", count=True,
+              help="Verbose output, can be used multiple times to increase logging level")
 def exhibition(verbose):
     logger.addHandler(logging.StreamHandler())
     if verbose > 1:
@@ -41,14 +46,20 @@ def exhibition(verbose):
         logger.setLevel(logging.WARN)
 
 
-@exhibition.command()
+@exhibition.command(short_help="Generate site")
 def gen():
+    """
+    Generate site from content_path
+    """
     settings = main.Config.from_path(main.SITE_YAML_PATH)
     main.gen(settings)
 
 
-@exhibition.command()
+@exhibition.command(short_help="Serve site locally")
 def serve():
+    """
+    Serve files from deploy_path as a webserver would
+    """
     settings = main.Config.from_path(main.SITE_YAML_PATH)
     httpd, thread = main.serve(settings)
 
