@@ -24,6 +24,7 @@ from unittest import TestCase, mock
 import pathlib
 
 from jinja2.exceptions import TemplateRuntimeError
+from jinja2 import Markup
 
 from exhibition.filters.jinja2 import content_filter as jinja_filter
 from exhibition.main import Node
@@ -45,6 +46,13 @@ BASE_TEMPLATE = """
 ERROR_TEMPLATE = """
 {% raise "This is an error" %}
 """.strip()
+
+MARK_TEMPLATE = """
+{% mark thingy %}
+Hello
+{% endmark %}
+Bye
+"""
 
 
 class Jinja2TestCase(TestCase):
@@ -114,3 +122,21 @@ class Jinja2TestCase(TestCase):
             jinja_filter(node, ERROR_TEMPLATE)
 
         self.assertEqual(excp.exception.message, "This is an error")
+
+    def test_mark_extension(self):
+        with TemporaryDirectory() as content_path, TemporaryDirectory() as deploy_path:
+            path = pathlib.Path(content_path, "blog.html")
+            with path.open("w") as f:
+                f.write(MARK_TEMPLATE)
+
+            node = Node(path, Node(path.parent, None, {"content_path": content_path,
+                                                       "deploy_path": deploy_path,
+                                                       "filter": "exhibition.filters.jinja2",
+                                                       "templates": []}))
+            self.assertEqual(node.marks, {"thingy": Markup("\nHello\n")})
+
+            node.render()
+            with pathlib.Path(deploy_path, "blog.html").open("r") as f:
+                content = f.read()
+
+            self.assertEqual(content, "\n\nHello\n\nBye")
