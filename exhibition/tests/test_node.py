@@ -235,7 +235,9 @@ class NodeTestCase(TestCase):
         self.assertEqual(node.get_content(), "a" * 10)
         self.assertEqual(node._content_start, 0)
 
+        node._content = None
         node._content_start = 5
+        node.get_content()
         self.assertEqual(node.get_content(), "a" * 5)
         self.assertEqual(node._content_start, 5)
 

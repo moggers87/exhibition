@@ -159,7 +159,9 @@ class Node:
     _file_mode = 0o644
 
     _content_start = None
+    _content = None
     _data = None
+    _marks = None
 
     def __init__(self, path, parent, meta=None):
         """
@@ -270,8 +272,6 @@ class Node:
     def render(self):
         """
         Process node and either create the directory or write contents of file to ``deploy_path``
-
-        If ``filter`` has been specified in :attr:`meta`
         """
         if not self.is_leaf:
             pathlib.Path(self.full_path).mkdir(self._dir_mode)
@@ -281,13 +281,6 @@ class Node:
         file_obj.touch(self._file_mode)
 
         content = self.get_content()
-        content_filter = self.meta.get("filter")
-
-        if content_filter is not None:
-            filter_module = import_module(content_filter)
-            filter_glob = self.meta.get("filter-glob", filter_module.DEFAULT_GLOB)
-            if file_obj in file_obj.parent.glob(filter_glob):
-                content = filter_module.content_filter(self, content)
 
         with file_obj.open("w") as fo:
             fo.write(content)
@@ -339,11 +332,43 @@ class Node:
 
         First calls :meth:`process_meta` to find the end any front matter that
         might be present and then returns the rest of the file
+
+        If ``filter`` has been specified in :attr:`meta`, that filter will be
+        used to further process the content.
         """
+        if self._content is not None:
+            return self._content
+
         self.process_meta()
+        content_filter = self.meta.get("filter")
         with self.path_obj.open("r") as file_obj:
             file_obj.seek(self._content_start)
-            return file_obj.read()
+            self._content = file_obj.read()
+
+            if content_filter is not None:
+                filter_module = import_module(content_filter)
+                filter_glob = self.meta.get("filter-glob", filter_module.DEFAULT_GLOB)
+                if self.path_obj in self.path_obj.parent.glob(filter_glob):
+                    self._content = filter_module.content_filter(self, self._content)
+
+        return self._content
+
+    @property
+    def marks(self):
+        """
+        Marked sections from content
+
+        Calls :meth:`get_content` to process content if that hasn't been done
+        already
+        """
+        if self._marks is not None:
+            return self._marks
+
+        self._marks = {}
+        # make sure that _marks gets populated
+        self.get_content()
+
+        return self._marks
 
     @property
     def data(self):

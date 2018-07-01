@@ -32,7 +32,7 @@ To use, add the following to your configuration file:
 from jinja2 import Environment, FileSystemLoader
 from jinja2.exceptions import TemplateRuntimeError
 from jinja2.ext import Extension
-from jinja2.nodes import CallBlock
+from jinja2.nodes import CallBlock, ContextReference, Const
 
 
 EXTENDS_TEMPLATE_TEMPLATE = """{%% extends "%s" %%}
@@ -43,6 +43,8 @@ END_BLOCK_TEMPLATE = """{% endblock %}
 """
 
 DEFAULT_GLOB = "*.html"
+
+NODE_TMPL_VAR = "node"
 
 
 class RaiseError(Extension):
@@ -67,6 +69,42 @@ class RaiseError(Extension):
             [], [], []).set_lineno(lineno)
 
 
+class Mark(Extension):
+    """
+    Marks a section for use later:
+
+    .. code-block:: html+jinja
+
+       {% mark intro %}
+       <p>My Intro</p>
+       {% endmark %}
+
+       <p>Some more text</p>
+
+    This can then be referenced via :attr:`Node.marks`.
+    """
+    tags = set(['mark'])
+
+    def parse(self, parser):
+        token = next(parser.stream)
+        lineno = token.lineno
+        tag = token.value
+        name = next(parser.stream).value
+        body = parser.parse_statements(["name:end%s" % tag], drop_needle=True)
+        return CallBlock(self.call_method('_render_output', args=[ContextReference(), Const(name)]),
+                         [], [], body).set_lineno(lineno)
+
+    def _render_output(self, ctx, name, caller=None):
+        """
+        Assign the marked content to :attr:`Node.marks`
+        """
+        if not caller:
+            return ""
+        out = caller()
+        ctx[NODE_TMPL_VAR].marks[name] = out
+        return out
+
+
 def content_filter(node, content):
     """
     This is the actual content filter called by :class:`exhibition.main.Node`
@@ -79,7 +117,7 @@ def content_filter(node, content):
     """
     env = Environment(
         loader=FileSystemLoader(node.meta["templates"]),
-        extensions=[RaiseError],
+        extensions=[RaiseError, Mark],
         autoescape=True,
     )
     parts = []
@@ -100,4 +138,4 @@ def content_filter(node, content):
 
     template = env.from_string(content)
 
-    return template.render({"node": node})
+    return template.render({NODE_TMPL_VAR: node})
