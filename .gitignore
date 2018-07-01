@@ -5,3 +5,5 @@ dist
 *.egg*
 .tox
 docs/_build
+.coverage
+htmlcov
