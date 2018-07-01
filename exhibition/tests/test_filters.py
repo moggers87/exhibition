@@ -52,7 +52,7 @@ MARK_TEMPLATE = """
 Hello
 {% endmark %}
 Bye
-"""
+""".strip()
 
 MD_TEMPLATE = """
 {% filter markdown %}
@@ -153,7 +153,7 @@ class Jinja2TestCase(TestCase):
             with pathlib.Path(deploy_path, "blog.html").open("r") as f:
                 content = f.read()
 
-            self.assertEqual(content, "\n\nHello\n\nBye")
+            self.assertEqual(content, "\nHello\n\nBye")
 
     def test_markdown_filter(self):
         node = Node(mock.Mock(),  None, meta={"templates": []})
