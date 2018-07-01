@@ -57,7 +57,7 @@ I'm not using it for anything serious yet, but there are tests, and there are so
    :target: https://codecov.io/github/moggers87/exhibition
    :alt: Coverage Status
    :scale: 100%
-.. |docs| image:: https://readthedocs.org/projects/exhibition/badge/?version=latest
+.. |docs| image:: https://readthedocs.org/projects/exhibition-ssg/badge/?version=latest
    :alt: Documentation Status
    :scale: 100%
-   :target: https://exhibition.readthedocs.io/en/latest/?badge=latest
+   :target: https://exhibition-ssg.readthedocs.io/en/latest/?badge=latest
