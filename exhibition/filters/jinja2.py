@@ -29,10 +29,12 @@ To use, add the following to your configuration file:
    filter: exhibition.filters.jinja2
 """
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, contextfilter
 from jinja2.exceptions import TemplateRuntimeError
 from jinja2.ext import Extension
 from jinja2.nodes import CallBlock, ContextReference, Const
+from typogrify.templatetags import jinja_filters as typogrify_filters
+from markdown import markdown as md_func
 
 
 EXTENDS_TEMPLATE_TEMPLATE = """{%% extends "%s" %%}
@@ -45,6 +47,20 @@ END_BLOCK_TEMPLATE = """{% endblock %}
 DEFAULT_GLOB = "*.html"
 
 NODE_TMPL_VAR = "node"
+
+DEFAULT_MD_KWARGS = {
+    "output_format": "html5",
+}
+
+
+@contextfilter
+def markdown(ctx, text):
+    kwargs = DEFAULT_MD_KWARGS.copy()
+    node = ctx[NODE_TMPL_VAR]
+
+    kwargs.update(node.meta.get("markdown_config", {}))
+
+    return md_func(text, **kwargs)
 
 
 class RaiseError(Extension):
@@ -120,6 +136,9 @@ def content_filter(node, content):
         extensions=[RaiseError, Mark],
         autoescape=True,
     )
+    env.filters["markdown"] = markdown
+    typogrify_filters.register(env)
+
     parts = []
 
     if node.meta.get("extends"):

@@ -52,7 +52,21 @@ MARK_TEMPLATE = """
 Hello
 {% endmark %}
 Bye
-"""
+""".strip()
+
+MD_TEMPLATE = """
+{% filter markdown %}
+## Hello
+
+This is *text*
+{% endfilter %}
+""".strip()
+
+TYPOG_TEMPLATE = """
+{% filter typogrify %}
+Hello -- how are you?
+{% endfilter %}
+""".strip()
 
 
 class Jinja2TestCase(TestCase):
@@ -139,4 +153,14 @@ class Jinja2TestCase(TestCase):
             with pathlib.Path(deploy_path, "blog.html").open("r") as f:
                 content = f.read()
 
-            self.assertEqual(content, "\n\nHello\n\nBye")
+            self.assertEqual(content, "\nHello\n\nBye")
+
+    def test_markdown_filter(self):
+        node = Node(mock.Mock(),  None, meta={"templates": []})
+        result = jinja_filter(node, MD_TEMPLATE)
+        self.assertEqual(result, "<h2>Hello</h2>\n<p>This is <em>text</em></p>")
+
+    def test_typogrify_filter(self):
+        node = Node(mock.Mock(),  None, meta={"templates": []})
+        result = jinja_filter(node, TYPOG_TEMPLATE)
+        self.assertEqual(result, "\nHello &#8212; how are&nbsp;you?\n")

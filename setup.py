@@ -26,7 +26,9 @@ setup(
     install_requires=[
         "click",
         "jinja2",
+        "markdown",
         "ruamel.yaml",
+        "typogrify",
     ],
     entry_points={
         "console_scripts": [
