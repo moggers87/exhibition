@@ -30,6 +30,13 @@ setup(
         "ruamel.yaml",
         "typogrify",
     ],
+    extras_require={
+        "docs": [
+            "sphinx",
+            "sphinx_rtd_theme",
+            "sphinx-click",
+        ],
+    },
     entry_points={
         "console_scripts": [
             "exhibit = exhibition.command:exhibition",

@@ -6,6 +6,11 @@
 Welcome to Exhibition's documentation!
 ======================================
 
+.. include:: ../README.rst
+  :start-after: inclusion-marker-do-not-remove-start
+  :end-before: inclusion-marker-do-not-remove-end
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -13,6 +18,7 @@ Welcome to Exhibition's documentation!
    getting-started
    commandline
    Exhibition API Guide <modules>
+   changelog
 
 
 
