@@ -282,7 +282,7 @@ class Node:
 
         content = self.get_content()
 
-        with file_obj.open("w") as fo:
+        with file_obj.open("w" if type(content) is str else "wb") as fo:
             fo.write(content)
 
     def process_meta(self):
@@ -297,9 +297,14 @@ class Node:
             return
 
         found_header = False
-        with self.path_obj.open("r") as file_obj:
+        with self.path_obj.open("rb") as file_obj:
             while True:
                 data = file_obj.read(100)
+                try:
+                    data = data.decode("utf-8")
+                except UnicodeDecodeError:
+                    self._content_start = 0
+                    return
 
                 if data == '':
                     # we've run out of file, either we didn't find a header or
@@ -341,9 +346,13 @@ class Node:
 
         self.process_meta()
         content_filter = self.meta.get("filter")
-        with self.path_obj.open("r") as file_obj:
+        with self.path_obj.open("rb") as file_obj:
             file_obj.seek(self._content_start)
             self._content = file_obj.read()
+            try:
+                self._content = self._content.decode("utf-8")
+            except UnicodeDecodeError:
+                return self._content
 
             if content_filter is not None:
                 filter_module = import_module(content_filter)
