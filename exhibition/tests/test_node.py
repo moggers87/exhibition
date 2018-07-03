@@ -66,6 +66,15 @@ JSON_FILE = """
 }
 """
 
+BINARY_FILE = (
+    b"\x00\x00\x01\x00\x02\x00\x10\x10\x10\x00\x01\x00\x04\x00(\x01\x00\x00&"
+    b"\x00\x00\x00  \x10\x00\x01\x00\x04\x00\xe8\x02\x00\x00N\x01\x00\x00("
+    b"\x00\x00\x00\x10\x00\x00\x00 \x00\x00\x00\x01\x00\x04\x00\x00\x00\x00"
+    b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    b"\x00\x00\x00\x00\x00\x01\x00\x00\x08\x0c\n\x00\x16\x18\x17\x00:<;\x00"
+    b"@BA\x00TV"
+)
+
 
 class NodeTestCase(TestCase):
     def setUp(self):
@@ -169,6 +178,24 @@ class NodeTestCase(TestCase):
         child_node.render()
         self.assertTrue(pathlib.Path(child_node.full_path).exists())
         self.assertTrue(pathlib.Path(child_node.full_path).is_file())
+
+    def test_render_binary_file(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child_path = pathlib.Path(self.content_path.name, "blog")
+        with child_path.open("wb") as cf:
+            cf.write(BINARY_FILE)
+
+        parent_node = Node(parent_path, None, meta=self.default_settings)
+        child_node = Node(child_path, parent_node)
+
+        self.assertFalse(pathlib.Path(child_node.full_path).exists())
+        child_node.render()
+        self.assertTrue(pathlib.Path(child_node.full_path).exists())
+        self.assertTrue(pathlib.Path(child_node.full_path).is_file())
+
+        with pathlib.Path(child_node.full_path).open("rb") as df:
+            content = df.read()
+            self.assertEqual(content, BINARY_FILE)
 
     def test_process_good_meta(self):
         path = pathlib.Path(self.content_path.name, "blog")
