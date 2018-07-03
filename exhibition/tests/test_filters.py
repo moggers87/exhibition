@@ -68,10 +68,29 @@ Hello -- how are you?
 {% endfilter %}
 """.strip()
 
+METASORT_TEMPLATE = """
+{% for child in node.children.values()|metasort("bob") -%}
+{{ child.meta.bob }}
+{%- endfor %}
+""".strip()
+
+METASELECT_TEMPLATE = """
+{% for child in node.children.values()|metaselect("bob") -%}
+{{ child.meta.bob }}
+{%- endfor %}
+""".strip()
+
+METAREJECT_TEMPLATE = """
+{% for child in node.children.values()|metareject("bob") -%}
+{{ child.meta.bob }}
+{%- endfor %}
+""".strip()
+
 
 class Jinja2TestCase(TestCase):
     def test_template(self):
         node = Node(mock.Mock(), None, meta={"templates": []})
+        node.is_leaf = False
         result = jinja_filter(node, PLAIN_TEMPLATE)
         self.assertEqual(result, "<p>0</p><p>1</p><p>2</p>")
 
@@ -82,6 +101,7 @@ class Jinja2TestCase(TestCase):
                 tmpl.write(BASE_TEMPLATE)
 
             node = Node(mock.Mock(), None, meta={"templates": [tmp_dir], "extends": "bob.j2"})
+            node.is_leaf = False
             result = jinja_filter(node, CONTENT_BLOCK)
             self.assertEqual(result, "<p>Title</p>\n<p>0</p><p>1</p><p>2</p>")
 
@@ -96,12 +116,14 @@ class Jinja2TestCase(TestCase):
 
             node = Node(mock.Mock(), None,
                         meta={"templates": [tmp1_dir, tmp2_dir], "extends": "bob.j2"})
+            node.is_leaf = False
             result = jinja_filter(node, CONTENT_BLOCK)
             self.assertEqual(result, "<p>Title</p>\n<p>0</p><p>1</p><p>2</p>")
 
             # switch order of template dirs,
             node = Node(mock.Mock(), None,
                         meta={"templates": [tmp2_dir, tmp1_dir], "extends": "bob.j2"})
+            node.is_leaf = False
             result = jinja_filter(node, CONTENT_BLOCK)
             self.assertEqual(result, "empty")
 
@@ -112,11 +134,13 @@ class Jinja2TestCase(TestCase):
                 tmpl.write(BASE_TEMPLATE)
 
             node = Node(mock.Mock(), None, meta={"templates": [tmp_dir], "extends": "bob.j2"})
+            node.is_leaf = False
             result = jinja_filter(node, PLAIN_TEMPLATE)
             self.assertEqual(result, "<p>Title</p>\n")
 
             node = Node(mock.Mock(), None, meta={"templates": [tmp_dir],
                                                  "extends": "bob.j2", "default-block": "content"})
+            node.is_leaf = False
             result = jinja_filter(node, PLAIN_TEMPLATE)
             self.assertEqual(result, "<p>Title</p>\n\n<p>0</p><p>1</p><p>2</p>")
 
@@ -124,6 +148,7 @@ class Jinja2TestCase(TestCase):
         path = mock.Mock()
         path.name = "thisfile.html"
         node = Node(path, None, meta={"templates": []})
+        node.is_leaf = False
         result = jinja_filter(node, "{{ node }}")
         self.assertEqual(result, "&lt;Node: thisfile.html&gt;")
 
@@ -132,6 +157,7 @@ class Jinja2TestCase(TestCase):
 
     def test_raise_extension(self):
         node = Node(mock.Mock(), None, meta={"templates": []})
+        node.is_leaf = False
         with self.assertRaises(TemplateRuntimeError) as excp:
             jinja_filter(node, ERROR_TEMPLATE)
 
@@ -156,11 +182,44 @@ class Jinja2TestCase(TestCase):
             self.assertEqual(content, "\nHello\n\nBye")
 
     def test_markdown_filter(self):
-        node = Node(mock.Mock(),  None, meta={"templates": []})
+        node = Node(mock.Mock(), None, meta={"templates": []})
+        node.is_leaf = False
         result = jinja_filter(node, MD_TEMPLATE)
         self.assertEqual(result, "<h2>Hello</h2>\n<p>This is <em>text</em></p>")
 
     def test_typogrify_filter(self):
-        node = Node(mock.Mock(),  None, meta={"templates": []})
+        node = Node(mock.Mock(), None, meta={"templates": []})
+        node.is_leaf = False
         result = jinja_filter(node, TYPOG_TEMPLATE)
         self.assertEqual(result, "\nHello &#8212; how are&nbsp;you?\n")
+
+    def test_metasort(self):
+        node = Node(mock.Mock(), None, meta={"templates": []})
+        node._content_start = 0
+        for i in [3, 5, 27, 2, 1]:
+            new_node = Node(mock.Mock(), node, meta={"bob": i})
+            new_node._content_start = 0
+        result = jinja_filter(node, METASORT_TEMPLATE)
+
+        self.assertEqual(result, "123527")
+
+    def test_metaselect(self):
+        node = Node(mock.Mock(),  None, meta={"templates": []})
+        node._content_start = 0
+        for i in [True, True, False, True, None]:
+            new_node = Node(mock.Mock(), node, meta={"bob": i})
+            new_node._content_start = 0
+        result = jinja_filter(node, METASELECT_TEMPLATE)
+
+        self.assertEqual(result, "TrueTrueTrue")
+
+    def test_metareject(self):
+        node = Node(mock.Mock(),  None, meta={"templates": []})
+        node._content_start = 0
+        for i in [True, True, False, True, None]:
+            new_node = Node(mock.Mock(), node, meta={"bob": i})
+            new_node._content_start = 0
+        result = jinja_filter(node, METAREJECT_TEMPLATE)
+
+        # dict key order isn't stable, but it'll be one of these
+        self.assertIn(result, ["FalseNone", "NoneFalse"])

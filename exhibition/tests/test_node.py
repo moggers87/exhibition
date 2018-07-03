@@ -203,10 +203,8 @@ class NodeTestCase(TestCase):
             f.write(GOOD_META)
 
         node = Node(path, None)
-        self.assertEqual(list(node.meta.keys()), [])
+        self.assertEqual(list(node._meta.keys()), [])
         self.assertEqual(node._content_start, None)
-
-        node.process_meta()
 
         self.assertEqual(list(node.meta.keys()), ["thingy"])
         self.assertEqual(node._content_start, 18)
@@ -217,10 +215,8 @@ class NodeTestCase(TestCase):
             f.write(BAD_START_META)
 
         node = Node(path, None)
-        self.assertEqual(list(node.meta.keys()), [])
+        self.assertEqual(list(node._meta.keys()), [])
         self.assertEqual(node._content_start, None)
-
-        node.process_meta()
 
         self.assertEqual(list(node.meta.keys()), [])
         self.assertEqual(node._content_start, 0)
@@ -231,10 +227,8 @@ class NodeTestCase(TestCase):
             f.write(BAD_END_META)
 
         node = Node(path, None)
-        self.assertEqual(list(node.meta.keys()), [])
+        self.assertEqual(list(node._meta.keys()), [])
         self.assertEqual(node._content_start, None)
-
-        node.process_meta()
 
         self.assertEqual(list(node.meta.keys()), [])
         self.assertEqual(node._content_start, 0)
@@ -245,10 +239,8 @@ class NodeTestCase(TestCase):
             f.write(NO_META)
 
         node = Node(path, None)
-        self.assertEqual(list(node.meta.keys()), [])
+        self.assertEqual(list(node._meta.keys()), [])
         self.assertEqual(node._content_start, None)
-
-        node.process_meta()
 
         self.assertEqual(list(node.meta.keys()), [])
         self.assertEqual(node._content_start, 0)
