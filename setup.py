@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="exhibition",
-    version="0.1",
+    version="0.0.1",
     author="Matt Molyneaux",
     author_email="moggers87+git@moggers87.co.uk",
     packages=find_packages(),

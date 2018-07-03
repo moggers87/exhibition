@@ -1,4 +1,4 @@
-.. _zero-zero--one:
+.. _zero-zero-one:
 
 0.0.1
 -----

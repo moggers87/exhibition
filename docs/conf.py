@@ -24,9 +24,9 @@ copyright = '2018, Matt Molyneaux'
 author = 'Matt Molyneaux'
 
 # The short X.Y version
-version = ''
+version = '0.0'
 # The full version, including alpha/beta/rc tags
-release = ''
+release = '0.0.1'
 
 
 # -- General configuration ---------------------------------------------------
