@@ -143,6 +143,9 @@ class Config:
         klass = type(self)
         return klass(self._base_config.copy(), self.parent)
 
+    def __repr__(self):
+        return "<%s: %s>" % (self.__class__.__name__, self._base_config.keys())
+
 
 class Node:
     """
@@ -178,9 +181,9 @@ class Node:
 
         self.is_leaf = self.path_obj.is_file()
 
-        self.meta = Config({}, getattr(self.parent, "meta", None))
+        self._meta = Config({}, getattr(self.parent, "meta", None))
         if meta:
-            self.meta.update(meta)
+            self._meta.update(meta)
 
         if self.parent:
             self.parent.add_child(self)
@@ -295,6 +298,9 @@ class Node:
         if self._content_start is not None:
             # we've done this already
             return
+        if not self.is_leaf:
+            self._content_start = 0
+            return
 
         found_header = False
         with self.path_obj.open("rb") as file_obj:
@@ -328,7 +334,7 @@ class Node:
                     found_meta = found_meta[:idx]
                     break
 
-        self.meta.load(found_meta)
+        self._meta.load(found_meta)
         self._content_start = len(self._meta_header) + len(found_meta) + len(self._meta_footer)
 
     def get_content(self):
@@ -361,6 +367,16 @@ class Node:
                     self._content = filter_module.content_filter(self, self._content)
 
         return self._content
+
+    @property
+    def meta(self):
+        """
+        Configuration object
+
+        Automatically loads front-matter if applicable
+        """
+        self.process_meta()
+        return self._meta
 
     @property
     def marks(self):

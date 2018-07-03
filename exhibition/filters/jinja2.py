@@ -29,12 +29,14 @@ To use, add the following to your configuration file:
    filter: exhibition.filters.jinja2
 """
 
+from datetime import datetime, timezone
+
 from jinja2 import Environment, FileSystemLoader, contextfilter
 from jinja2.exceptions import TemplateRuntimeError
 from jinja2.ext import Extension
 from jinja2.nodes import CallBlock, ContextReference, Const
-from typogrify.templatetags import jinja_filters as typogrify_filters
 from markdown import markdown as md_func
+from typogrify.templatetags import jinja_filters as typogrify_filters
 
 
 EXTENDS_TEMPLATE_TEMPLATE = """{%% extends "%s" %%}
@@ -51,6 +53,28 @@ NODE_TMPL_VAR = "node"
 DEFAULT_MD_KWARGS = {
     "output_format": "html5",
 }
+
+
+def metasort(nodes, key=None, reverse=False):
+    """
+    Sorts a list of nodes based on keys found in their meta objects
+    """
+    def key_func(node):
+        return node.meta[key]
+
+    return sorted(nodes, key=key_func, reverse=reverse)
+
+
+def metaselect(nodes, key):
+    for n in nodes:
+        if n.meta.get(key):
+            yield n
+
+
+def metareject(nodes, key):
+    for n in nodes:
+        if not n.meta.get(key):
+            yield n
 
 
 @contextfilter
@@ -137,6 +161,9 @@ def content_filter(node, content):
         autoescape=True,
     )
     env.filters["markdown"] = markdown
+    env.filters["metasort"] = metasort
+    env.filters["metaselect"] = metaselect
+    env.filters["metareject"] = metareject
     typogrify_filters.register(env)
 
     parts = []
@@ -157,4 +184,7 @@ def content_filter(node, content):
 
     template = env.from_string(content)
 
-    return template.render({NODE_TMPL_VAR: node})
+    return template.render({
+        NODE_TMPL_VAR: node,
+        "time_now": datetime.now(timezone.utc),
+    })
