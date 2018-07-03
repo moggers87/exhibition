@@ -1,3 +1,11 @@
+.. _zero-zero-two:
+
+0.0.2
+-----
+
+- Fixed trove classifiers
+- Add ``__version__`` to ``exhibition.__init__``
+
 .. _zero-zero-one:
 
 0.0.1
