@@ -45,7 +45,8 @@ that I have made with Hyde.
 What's the status of this project?
 ----------------------------------
 
-I'm not using it for anything serious yet, but there are tests, and there are some docs.
+There are tests, there's some documentation, and I currently use it for a
+number of websites including my personal blog.
 
 .. inclusion-marker-do-not-remove-end
 
