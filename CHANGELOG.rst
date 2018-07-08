@@ -1,5 +1,7 @@
-Unreleased
-----------
+.. _zero-zero-three:
+
+0.0.3
+-----
 
 - Fix bug where extension stripping was not being applied
 

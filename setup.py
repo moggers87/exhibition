@@ -5,7 +5,7 @@ with open("README.rst", "r") as f:
 
 setup(
     name="exhibition",
-    version="0.0.2",
+    version="0.0.3",
     author="Matt Molyneaux",
     author_email="moggers87+git@moggers87.co.uk",
     description="A Python static site generator",
