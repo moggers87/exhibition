@@ -121,13 +121,23 @@ class NodeTestCase(TestCase):
 
     def test_full_url_with_parent(self):
         parent_path = pathlib.Path(self.content_path.name)
+        child_path = pathlib.Path(self.content_path.name, "page.jpg")
+        child_path.touch()
+
+        parent_node = Node(parent_path, None, meta=self.default_settings)
+        child_node = Node(child_path, parent_node)
+
+        self.assertEqual(child_node.full_url, "/page.jpg")
+
+    def test_full_url_with_strip_ext(self):
+        parent_path = pathlib.Path(self.content_path.name)
         child_path = pathlib.Path(self.content_path.name, "page.html")
         child_path.touch()
 
         parent_node = Node(parent_path, None, meta=self.default_settings)
         child_node = Node(child_path, parent_node)
 
-        self.assertEqual(child_node.full_url, "/page.html")
+        self.assertEqual(child_node.full_url, "/page")
 
     def test_full_url_with_index(self):
         parent_path = pathlib.Path(self.content_path.name)

@@ -153,7 +153,7 @@ class Node:
     """
     _meta_names = ["meta.yaml", "meta.yml"]
     _index_file = "index.html"
-    _strip_exts = ["html"]
+    _strip_exts = [".html"]
 
     _meta_header = "---\n"
     _meta_footer = "---\n"
