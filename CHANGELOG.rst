@@ -1,3 +1,9 @@
+Unreleased
+----------
+
+- Fix bug where extension stripping was not being applied
+
+
 .. _zero-zero-two:
 
 0.0.2
