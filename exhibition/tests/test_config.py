@@ -21,11 +21,11 @@
 
 from io import StringIO
 from tempfile import NamedTemporaryFile
-from unittest import TestCase
+from unittest import TestCase, mock
 
 from ruamel.yaml import YAML
 
-from exhibition.main import Config
+from exhibition.main import Config, SITE_YAML_PATH
 
 
 YAML_DATA = """
@@ -90,7 +90,7 @@ class ConfigTestCase(TestCase):
 
     def test_getitem_with_parent(self):
         parent = Config({"test": True})
-        settings = Config(YAML_DATA, parent=parent)
+        settings = Config(YAML_DATA, parent=parent, node=mock.Mock())
 
         self.assertEqual(settings["sitename"], "bob")
         self.assertEqual(settings["thingy"], ["one", "two", "three"])
@@ -111,7 +111,7 @@ class ConfigTestCase(TestCase):
 
     def test_keys_with_parent(self):
         parent = Config({"test": True})
-        settings = Config(YAML_DATA, parent=parent)
+        settings = Config(YAML_DATA, parent=parent, node=mock.Mock())
 
         self.assertCountEqual(list(settings.keys()), ["sitename", "thingy", "test"])
         self.assertCountEqual(list(parent.keys()), ["test"])
@@ -123,7 +123,7 @@ class ConfigTestCase(TestCase):
 
     def test_values_with_parent(self):
         parent = Config({"test": True})
-        settings = Config(YAML_DATA, parent=parent)
+        settings = Config(YAML_DATA, parent=parent, node=mock.Mock())
 
         self.assertCountEqual(list(settings.values()), ["bob", ["one", "two", "three"], True])
         self.assertCountEqual(list(parent.values()), [True])
@@ -136,7 +136,7 @@ class ConfigTestCase(TestCase):
 
     def test_items_with_parent(self):
         parent = Config({"test": True})
-        settings = Config(YAML_DATA, parent=parent)
+        settings = Config(YAML_DATA, parent=parent, node=mock.Mock())
 
         self.assertCountEqual(list(settings.items()),
                               [("sitename", "bob"), ("thingy", ["one", "two", "three"]),
@@ -152,7 +152,7 @@ class ConfigTestCase(TestCase):
 
     def test_contains_with_parent(self):
         parent = Config({"test": True})
-        settings = Config(YAML_DATA, parent=parent)
+        settings = Config(YAML_DATA, parent=parent, node=mock.Mock())
 
         self.assertIn("test", settings)
         self.assertIn("sitename", settings)
@@ -169,7 +169,46 @@ class ConfigTestCase(TestCase):
 
     def test_len_with_parent(self):
         parent = Config({"test": True})
-        settings = Config(YAML_DATA, parent=parent)
+        settings = Config(YAML_DATA, parent=parent, node=mock.Mock())
 
         self.assertEqual(len(settings), 3)
         self.assertEqual(len(parent), 1)
+
+    def test_parent_and_node(self):
+        with self.assertRaises(AssertionError):
+            Config({}, parent=Config({}))
+
+        with self.assertRaises(AssertionError):
+            Config({}, node=mock.Mock())
+
+        # these should be fine
+        Config({})
+        Config({}, parent=Config({}), node=mock.Mock())
+
+    def test_get_name_for_root_config(self):
+        config = Config({})
+        self.assertEqual(config.get_name(), SITE_YAML_PATH)
+
+    def test_get_name_for_node_config(self):
+        node = mock.Mock()
+        node.full_path = "this-file.html"
+        config = Config({}, parent=mock.Mock(), node=node)
+        self.assertEqual(config.get_name(), node.full_path)
+
+    def test_KeyError_contains_name_of_child(self):
+        node = mock.Mock()
+        node.full_path = "this-file.html"
+        config = Config({}, parent=Config({}), node=node)
+
+        with self.assertRaises(KeyError) as exp:
+            config["some key"]
+
+        self.assertIn("this-file.html", str(exp.exception))
+
+    def test_KeyError_contains_name_of_site_yaml(self):
+        config = Config({})
+
+        with self.assertRaises(KeyError) as exp:
+            config["some key"]
+
+        self.assertIn(SITE_YAML_PATH, str(exp.exception))

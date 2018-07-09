@@ -48,15 +48,23 @@ class Config:
     If a key cannot be found in this instance, the parent :class:`Config` will
     be searched (and its parent, etc.)
     """
-    def __init__(self, data=None, parent=None):
+    def __init__(self, data=None, parent=None, node=None):
         """
         :param data:
             Can be one of a string, a file-like object, a dict-like object, or
             ``None``. The first two will be assumed as YAML
         :param parent:
-            Parent :class:`Config` or ``None`` if this is the root configuration object
+            Parent :class:`Config` or ``None`` if this is the root
+            configuration object
+        :param node:
+            The node that this object to bound to, or ``None`` if it is the
+            root configuration object
         """
+        assert (parent is None) == (node is None), \
+            "Either both parent and node are defined or they are both None"
+
         self.parent = parent
+        self.node = node
         self._base_config = {}
 
         if data:
@@ -88,14 +96,24 @@ class Config:
 
         return obj
 
+    def get_name(self):
+        if self.node is None:
+            return SITE_YAML_PATH
+        else:
+            return self.node.full_path
+
     def __getitem__(self, key):
         try:
             return self._base_config[key]
-        except KeyError:
+        except KeyError as exp:
+            exp_str = "Could not find %s in %s" % (key, self.get_name())
             if self.parent is None:
-                raise
+                raise KeyError(exp_str) from exp
             else:
-                return self.parent[key]
+                try:
+                    return self.parent[key]
+                except KeyError as exp_parent:
+                    raise KeyError(exp_str) from exp
 
     def __setitem__(self, key, value):
         self._base_config[key] = value
@@ -143,7 +161,9 @@ class Config:
         return klass(self._base_config.copy(), self.parent)
 
     def __repr__(self):
-        return "<%s: %s>" % (self.__class__.__name__, self._base_config.keys())
+        return "<%s: %s: %s>" % (self.__class__.__name__,
+                                 self.get_name(),
+                                 self._base_config.keys())
 
 
 class Node:
@@ -180,7 +200,7 @@ class Node:
 
         self.is_leaf = self.path_obj.is_file()
 
-        self._meta = Config({}, getattr(self.parent, "meta", None))
+        self._meta = Config({}, parent=getattr(self.parent, "meta", None), node=self.parent)
         if meta:
             self._meta.update(meta)
 
