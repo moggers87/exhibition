@@ -37,6 +37,16 @@ INDEX_CONTENTS = """<html>
 </html>
 """
 
+PAGE_CONTENTS = """<html>
+    <head>
+        <title>Page 1</title>
+    </head>
+    <body>
+        This is a page
+    </body>
+</html>
+"""
+
 CSS_CONTENTS = """// CSS file
 html, body {
     color: black;
@@ -51,6 +61,9 @@ class ServeTestCase(TestCase):
 
         with open(os.path.join(self.tmp_dir.name, "index.html"), "w") as index:
             index.write(INDEX_CONTENTS)
+
+        with open(os.path.join(self.tmp_dir.name, "page.html"), "w") as page:
+            page.write(PAGE_CONTENTS)
 
         with open(os.path.join(self.tmp_dir.name, "style.css"), "w") as css:
             css.write(CSS_CONTENTS)
@@ -108,3 +121,33 @@ class ServeTestCase(TestCase):
         self.client.request("GET", "/not-existing.html")
         response = self.client.getresponse()
         self.assertEqual(response.status, 404)
+
+    def test_stripped_extension(self):
+        settings = Config({"deploy_path": self.tmp_dir.name})
+        self.get_server(settings)
+
+        self.client.request("GET", "/page")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 200)
+        content = response.read()
+        self.assertEqual(content, PAGE_CONTENTS.encode())
+
+    def test_stripped_extension_and_trailing_slash(self):
+        settings = Config({"deploy_path": self.tmp_dir.name})
+        self.get_server(settings)
+
+        self.client.request("GET", "/page/")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 200)
+        content = response.read()
+        self.assertEqual(content, PAGE_CONTENTS.encode())
+
+    def test_stripped_extension_with_extension(self):
+        settings = Config({"deploy_path": self.tmp_dir.name})
+        self.get_server(settings)
+
+        self.client.request("GET", "/page.html")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 200)
+        content = response.read()
+        self.assertEqual(content, PAGE_CONTENTS.encode())

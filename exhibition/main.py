@@ -23,7 +23,6 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 from importlib import import_module
 import io
 import logging
-import os
 import pathlib
 import shutil
 import threading
@@ -460,9 +459,19 @@ def serve(settings):
                     return ""
                 path = path.lstrip(base).strip("/")
 
-            path = os.path.join(settings["deploy_path"], path)
+            path = pathlib.Path(settings["deploy_path"], path)
 
-            return path
+            if not (path.exists() and path.suffix):
+                for ext in Node._strip_exts:
+                    new_path = path.with_suffix(ext)
+                    if new_path.exists():
+                        return str(new_path)
+            elif path.is_dir():
+                new_path = pathlib.Path(path, Node._index_file)
+                if new_path.exists():
+                    return str(new_path)
+
+            return str(path)
 
     server_address = ('localhost', 8000)
 
