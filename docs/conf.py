@@ -14,8 +14,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
 
+import exhibition
 
 # -- Project information -----------------------------------------------------
 
@@ -24,9 +24,9 @@ copyright = '2018, Matt Molyneaux'
 author = 'Matt Molyneaux'
 
 # The short X.Y version
-version = '0.0'
+version = ".".join(exhibition.__version__.split(".")[:2])
 # The full version, including alpha/beta/rc tags
-release = '0.0.3'
+release = exhibition.__version__
 
 
 # -- General configuration ---------------------------------------------------

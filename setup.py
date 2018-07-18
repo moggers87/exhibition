@@ -1,11 +1,14 @@
 from setuptools import setup, find_packages
+import versioneer
+
 
 with open("README.rst", "r") as f:
     long_desc = f.read()
 
 setup(
     name="exhibition",
-    version="0.0.3",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     author="Matt Molyneaux",
     author_email="moggers87+git@moggers87.co.uk",
     description="A Python static site generator",
