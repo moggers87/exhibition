@@ -2,8 +2,10 @@ Unreleased
 ----------
 
 - Added vesrioneer
-- Fix bug where `exhibit serve` was not serving files with extension stripping
-  enabled
+- Fix bug where ``exhibit serve`` was not serving files with extension
+  stripping enabled
+- ``KeyError``s raised by ``Config`` now display the path of the node they are
+  attached to, making debuging missing keys far easier.
 
 .. _zero-zero-three:
 
