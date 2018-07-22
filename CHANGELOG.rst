@@ -2,6 +2,8 @@ Unreleased
 ----------
 
 - Added vesrioneer
+- Fix bug where `exhibit serve` was not serving files with extension stripping
+  enabled
 
 .. _zero-zero-three:
 
@@ -9,7 +11,6 @@ Unreleased
 -----
 
 - Fix bug where extension stripping was not being applied
-
 
 .. _zero-zero-two:
 
