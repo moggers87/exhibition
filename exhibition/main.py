@@ -113,7 +113,7 @@ class Config:
                 try:
                     return self.parent[key]
                 except KeyError as exp_parent:
-                    raise KeyError(exp_str) from exp
+                    raise KeyError(exp_str) from exp_parent
 
     def __setitem__(self, key, value):
         self._base_config[key] = value
@@ -158,7 +158,7 @@ class Config:
 
     def copy(self):
         klass = type(self)
-        return klass(self._base_config.copy(), self.parent)
+        return klass(self._base_config.copy(), parent=self.parent, node=self.node)
 
     def __repr__(self):
         return "<%s: %s: %s>" % (self.__class__.__name__,

@@ -61,6 +61,11 @@ class ConfigTestCase(TestCase):
         self.assertEqual(settings["sitename"], "bob")
         self.assertEqual(settings["thingy"], ["one", "two", "three"])
 
+    def test_load_AssertionError(self):
+        # raise an AssertionError if it's not a dict or file-like object
+        with self.assertRaises(AssertionError):
+            Config(12)
+
     def test_no_load(self):
         settings = Config()
         self.assertEqual(len(settings), 0)
@@ -110,11 +115,11 @@ class ConfigTestCase(TestCase):
         self.assertCountEqual(list(settings.keys()), ["sitename", "thingy"])
 
     def test_keys_with_parent(self):
-        parent = Config({"test": True})
+        parent = Config({"test": True, "sitename": "me"})
         settings = Config(YAML_DATA, parent=parent, node=mock.Mock())
 
         self.assertCountEqual(list(settings.keys()), ["sitename", "thingy", "test"])
-        self.assertCountEqual(list(parent.keys()), ["test"])
+        self.assertCountEqual(list(parent.keys()), ["test", "sitename"])
 
     def test_values(self):
         settings = Config(YAML_DATA)
@@ -212,3 +217,15 @@ class ConfigTestCase(TestCase):
             config["some key"]
 
         self.assertIn(SITE_YAML_PATH, str(exp.exception))
+
+    def test_copy(self):
+        parent = Config({})
+        settings = Config(YAML_DATA, parent=parent, node=mock.Mock())
+        copied = settings.copy()
+
+        self.assertNotEqual(settings, copied)
+        self.assertEqual([i for i in settings.keys()], [i for i in copied.keys()])
+        self.assertEqual(settings.parent, copied.parent)
+
+        settings["bob"] = "hello"
+        self.assertNotEqual([i for i in settings.keys()], [i for i in copied.keys()])
