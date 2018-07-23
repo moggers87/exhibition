@@ -1,2 +1,3 @@
 [run]
 source = exhibition
+omit = exhibition/_version.py
