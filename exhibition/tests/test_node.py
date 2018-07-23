@@ -119,6 +119,15 @@ class NodeTestCase(TestCase):
 
         self.assertEqual(node.full_url, "/")
 
+    def test_full_url_base_url(self):
+        path = pathlib.Path(self.content_path.name, "page.html")
+        path.touch()
+
+        for base in ["/base/", "/base", "base/"]:
+            self.default_settings["base_url"] = base
+            node = Node(path, None, meta=self.default_settings)
+            self.assertEqual(node.full_url, "/base/")
+
     def test_full_url_with_parent(self):
         parent_path = pathlib.Path(self.content_path.name)
         child_path = pathlib.Path(self.content_path.name, "page.jpg")
