@@ -113,7 +113,7 @@ class Config:
                 try:
                     return self.parent[key]
                 except KeyError as exp_parent:
-                    raise KeyError(exp_str) from exp
+                    raise KeyError(exp_str) from exp_parent
 
     def __setitem__(self, key, value):
         self._base_config[key] = value
@@ -158,7 +158,7 @@ class Config:
 
     def copy(self):
         klass = type(self)
-        return klass(self._base_config.copy(), self.parent)
+        return klass(self._base_config.copy(), parent=self.parent, node=self.node)
 
     def __repr__(self):
         return "<%s: %s: %s>" % (self.__class__.__name__,
@@ -230,7 +230,12 @@ class Node:
         if path.is_dir():
             for child in path.iterdir():
                 ignored = False
-                for glob in node.meta.get("ignore", []):
+                globs = node.meta.get("ignore", [])
+
+                if not isinstance(globs, (list, tuple)):
+                    globs = [globs]
+
+                for glob in globs:
                     if child in path.glob(glob):
                         ignored = True
                         break
@@ -481,7 +486,7 @@ def serve(settings):
 
             path = pathlib.Path(settings["deploy_path"], path)
 
-            if not (path.exists() and path.suffix):
+            if not (path.exists() or path.suffix):
                 for ext in Node._strip_exts:
                     new_path = path.with_suffix(ext)
                     if new_path.exists():

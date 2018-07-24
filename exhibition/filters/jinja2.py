@@ -134,12 +134,10 @@ class Mark(Extension):
         return CallBlock(self.call_method('_render_output', args=[ContextReference(), Const(name)]),
                          [], [], body).set_lineno(lineno)
 
-    def _render_output(self, ctx, name, caller=None):
+    def _render_output(self, ctx, name, caller):
         """
         Assign the marked content to :attr:`Node.marks`
         """
-        if not caller:
-            return ""
         out = caller()
         ctx[NODE_TMPL_VAR].marks[name] = out
         return out

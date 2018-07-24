@@ -49,6 +49,12 @@ NO_META = """
 Some text
 """
 
+LONG_META = """---
+%s
+---
+Some text
+""" % "\n".join(["thing%s: 1" % i for i in range(100)])
+
 YAML_FILE = """
 thingy: 3
 bob:
@@ -118,6 +124,15 @@ class NodeTestCase(TestCase):
         node = Node(path, None, meta=self.default_settings)
 
         self.assertEqual(node.full_url, "/")
+
+    def test_full_url_base_url(self):
+        path = pathlib.Path(self.content_path.name, "page.html")
+        path.touch()
+
+        for base in ["/base/", "/base", "base/"]:
+            self.default_settings["base_url"] = base
+            node = Node(path, None, meta=self.default_settings)
+            self.assertEqual(node.full_url, "/base/")
 
     def test_full_url_with_parent(self):
         parent_path = pathlib.Path(self.content_path.name)
@@ -219,6 +234,18 @@ class NodeTestCase(TestCase):
         self.assertEqual(list(node.meta.keys()), ["thingy"])
         self.assertEqual(node._content_start, 18)
 
+    def test_process_long_meta(self):
+        path = pathlib.Path(self.content_path.name, "blog")
+        with path.open("w") as f:
+            f.write(LONG_META)
+
+        node = Node(path, None)
+        self.assertEqual(list(node._meta.keys()), [])
+        self.assertEqual(node._content_start, None)
+
+        self.assertCountEqual(list(node.meta.keys()), ["thing%s" % i for i in range(100)])
+        self.assertEqual(node._content_start, 1098)
+
     def test_process_bad_start_meta(self):
         path = pathlib.Path(self.content_path.name, "blog")
         with path.open("w") as f:
@@ -276,6 +303,20 @@ class NodeTestCase(TestCase):
             f.write(YAML_FILE)
 
         node = Node(path, None)
+
+        self.assertEqual(node.data, {"thingy": 3, "bob": [1, 2]})
+
+    def test_cached_data(self):
+        path = pathlib.Path(self.content_path.name, "blog.yaml")
+        with path.open("w") as f:
+            f.write(YAML_FILE)
+
+        node = Node(path, None)
+
+        self.assertEqual(node.data, {"thingy": 3, "bob": [1, 2]})
+
+        with path.open("w") as f:
+            f.write("test: 1")
 
         self.assertEqual(node.data, {"thingy": 3, "bob": [1, 2]})
 
@@ -345,6 +386,37 @@ class NodeTestCase(TestCase):
         child1_path.touch()
         child2_path = pathlib.Path(self.content_path.name, "page2.html")
         child2_path.touch()
+        child3_path = pathlib.Path(self.content_path.name, "picture.jpg")
+        child3_path.touch()
 
         parent_node = Node.from_path(parent_path, meta={"ignore": "*.html"})
-        self.assertCountEqual(list(parent_node.children.keys()), [])
+        self.assertCountEqual(list(parent_node.children.keys()), ["picture.jpg"])
+
+    def test_from_path_and_ignore_list(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child1_path = pathlib.Path(self.content_path.name, "page1.html")
+        child1_path.touch()
+        child2_path = pathlib.Path(self.content_path.name, "page2.html")
+        child2_path.touch()
+        child3_path = pathlib.Path(self.content_path.name, "picture.jpg")
+        child3_path.touch()
+        child4_path = pathlib.Path(self.content_path.name, "picture.gif")
+        child4_path.touch()
+
+        parent_node = Node.from_path(parent_path, meta={"ignore": ["*.html", "*.gif"]})
+        self.assertCountEqual(list(parent_node.children.keys()), ["picture.jpg"])
+
+    def test_from_path_with_meta(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child1_path = pathlib.Path(self.content_path.name, "page1.html")
+        child1_path.touch()
+        child2_path = pathlib.Path(self.content_path.name, "page2.html")
+        child2_path.touch()
+
+        meta_path = pathlib.Path(self.content_path.name, "meta.yaml")
+        with meta_path.open("w") as f:
+            f.write("test: bob")
+
+        parent_node = Node.from_path(parent_path)
+        self.assertCountEqual(list(parent_node.children.keys()), ["page1.html", "page2.html"])
+        self.assertEqual(parent_node.meta["test"], "bob")
