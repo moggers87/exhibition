@@ -372,6 +372,22 @@ class NodeTestCase(TestCase):
         child1_path.touch()
         child2_path = pathlib.Path(self.content_path.name, "page2.html")
         child2_path.touch()
+        child3_path = pathlib.Path(self.content_path.name, "picture.jpg")
+        child3_path.touch()
 
         parent_node = Node.from_path(parent_path, meta={"ignore": "*.html"})
-        self.assertCountEqual(list(parent_node.children.keys()), [])
+        self.assertCountEqual(list(parent_node.children.keys()), ["picture.jpg"])
+
+    def test_from_path_and_ignore_list(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child1_path = pathlib.Path(self.content_path.name, "page1.html")
+        child1_path.touch()
+        child2_path = pathlib.Path(self.content_path.name, "page2.html")
+        child2_path.touch()
+        child3_path = pathlib.Path(self.content_path.name, "picture.jpg")
+        child3_path.touch()
+        child4_path = pathlib.Path(self.content_path.name, "picture.gif")
+        child4_path.touch()
+
+        parent_node = Node.from_path(parent_path, meta={"ignore": ["*.html", "*.gif"]})
+        self.assertCountEqual(list(parent_node.children.keys()), ["picture.jpg"])

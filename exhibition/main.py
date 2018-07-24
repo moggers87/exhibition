@@ -230,7 +230,12 @@ class Node:
         if path.is_dir():
             for child in path.iterdir():
                 ignored = False
-                for glob in node.meta.get("ignore", []):
+                globs = node.meta.get("ignore", [])
+
+                if not isinstance(globs, (list, tuple)):
+                    globs = [globs]
+
+                for glob in globs:
                     if child in path.glob(glob):
                         ignored = True
                         break
