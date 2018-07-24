@@ -81,7 +81,7 @@ class ServeTestCase(TestCase):
         self.blog_dir = pathlib.Path(self.tmp_dir.name, "blog")
         self.blog_dir.mkdir()
 
-        with pathlib.Path(self.tmp_dir.name, self.blog_dir, "index.html").open("w") as index:
+        with pathlib.Path(self.blog_dir, "index.html").open("w") as index:
             index.write(BLOG_INDEX_CONTENTS)
 
         self.client = HTTPConnection("localhost", "8000")
@@ -168,6 +168,14 @@ class ServeTestCase(TestCase):
         content = response.read()
         self.assertEqual(content, PAGE_CONTENTS.encode())
 
+    def test_stripped_extension_not_exists(self):
+        settings = Config({"deploy_path": self.tmp_dir.name})
+        self.get_server(settings)
+
+        self.client.request("GET", "/unknown")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 404)
+
     def test_dir_index(self):
         settings = Config({"deploy_path": self.tmp_dir.name})
         self.get_server(settings)
@@ -177,3 +185,14 @@ class ServeTestCase(TestCase):
         self.assertEqual(response.status, 200)
         content = response.read()
         self.assertEqual(content, BLOG_INDEX_CONTENTS.encode())
+
+    def test_dir_without_index(self):
+        settings = Config({"deploy_path": self.tmp_dir.name})
+        index = pathlib.Path(self.blog_dir, "index.html")
+        index.unlink()
+        self.assertFalse(index.exists())
+        self.get_server(settings)
+
+        self.client.request("GET", "/blog/")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 200)
