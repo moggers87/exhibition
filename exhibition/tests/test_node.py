@@ -49,6 +49,12 @@ NO_META = """
 Some text
 """
 
+LONG_META = """---
+%s
+---
+Some text
+""" % "\n".join(["thing%s: 1" % i for i in range(100)])
+
 YAML_FILE = """
 thingy: 3
 bob:
@@ -227,6 +233,18 @@ class NodeTestCase(TestCase):
 
         self.assertEqual(list(node.meta.keys()), ["thingy"])
         self.assertEqual(node._content_start, 18)
+
+    def test_process_long_meta(self):
+        path = pathlib.Path(self.content_path.name, "blog")
+        with path.open("w") as f:
+            f.write(LONG_META)
+
+        node = Node(path, None)
+        self.assertEqual(list(node._meta.keys()), [])
+        self.assertEqual(node._content_start, None)
+
+        self.assertCountEqual(list(node.meta.keys()), ["thing%s" % i for i in range(100)])
+        self.assertEqual(node._content_start, 1098)
 
     def test_process_bad_start_meta(self):
         path = pathlib.Path(self.content_path.name, "blog")
