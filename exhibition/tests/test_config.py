@@ -121,6 +121,18 @@ class ConfigTestCase(TestCase):
         self.assertCountEqual(list(settings.keys()), ["sitename", "thingy", "test"])
         self.assertCountEqual(list(parent.keys()), ["test", "sitename"])
 
+    def test_iter(self):
+        settings = Config(YAML_DATA)
+
+        self.assertCountEqual(list(settings), ["sitename", "thingy"])
+
+    def test_iter_with_parent(self):
+        parent = Config({"test": True, "sitename": "me"})
+        settings = Config(YAML_DATA, parent=parent, node=mock.Mock())
+
+        self.assertCountEqual(list(settings.keys()), ["sitename", "thingy", "test"])
+        self.assertCountEqual(list(parent.keys()), ["test", "sitename"])
+
     def test_values(self):
         settings = Config(YAML_DATA)
 
