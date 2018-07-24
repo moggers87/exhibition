@@ -391,3 +391,18 @@ class NodeTestCase(TestCase):
 
         parent_node = Node.from_path(parent_path, meta={"ignore": ["*.html", "*.gif"]})
         self.assertCountEqual(list(parent_node.children.keys()), ["picture.jpg"])
+
+    def test_from_path_with_meta(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child1_path = pathlib.Path(self.content_path.name, "page1.html")
+        child1_path.touch()
+        child2_path = pathlib.Path(self.content_path.name, "page2.html")
+        child2_path.touch()
+
+        meta_path = pathlib.Path(self.content_path.name, "meta.yaml")
+        with meta_path.open("w") as f:
+            f.write("test: bob")
+
+        parent_node = Node.from_path(parent_path)
+        self.assertCountEqual(list(parent_node.children.keys()), ["page1.html", "page2.html"])
+        self.assertEqual(parent_node.meta["test"], "bob")
