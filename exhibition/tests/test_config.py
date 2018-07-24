@@ -109,6 +109,29 @@ class ConfigTestCase(TestCase):
         with self.assertRaises(KeyError):
             settings["sitetitle"]
 
+    def test_setitem(self):
+        settings = Config(YAML_DATA)
+
+        settings["sitename"] = "mysite"
+
+        self.assertEqual(settings["sitename"], "mysite")
+        self.assertEqual(settings["thingy"], ["one", "two", "three"])
+
+    def test_setitem_with_parent(self):
+        parent = Config({"test": True})
+        settings = Config(YAML_DATA, parent=parent, node=mock.Mock())
+
+        settings["sitename"] = "mysite"
+        settings["test"] = False
+
+        self.assertEqual(settings["sitename"], "mysite")
+        self.assertEqual(settings["thingy"], ["one", "two", "three"])
+        self.assertEqual(settings["test"], False)
+        self.assertEqual(parent["test"], True)
+
+        with self.assertRaises(KeyError):
+            parent["sitename"]
+
     def test_keys(self):
         settings = Config(YAML_DATA)
 
