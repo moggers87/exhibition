@@ -6,6 +6,7 @@ Unreleased
   stripping enabled
 - ``KeyError``s raised by ``Config`` now display the path of the node they are
   attached to, making debuging missing keys far easier.
+- Improved test coverage and fixed numerous bugs
 
 .. _zero-zero-three:
 
