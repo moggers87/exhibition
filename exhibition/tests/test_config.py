@@ -264,3 +264,9 @@ class ConfigTestCase(TestCase):
 
         settings["bob"] = "hello"
         self.assertNotEqual([i for i in settings.keys()], [i for i in copied.keys()])
+
+    def test_repr(self):
+        settings = Config({})
+        # just a smoke test to make sure it doesn't blow up
+        self.assertTrue(isinstance(repr(settings), str))
+        self.assertTrue(repr(settings))
