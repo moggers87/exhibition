@@ -22,7 +22,7 @@
 from http.client import HTTPConnection
 from tempfile import TemporaryDirectory
 from unittest import TestCase
-import os
+import pathlib
 
 from exhibition.main import Config, serve
 
@@ -33,6 +33,16 @@ INDEX_CONTENTS = """<html>
     </head>
     <body>
         Hello world!
+    </body>
+</html>
+"""
+
+BLOG_INDEX_CONTENTS = """<html>
+    <head>
+        <title>Blog</title>
+    </head>
+    <body>
+        Goodbye world!
     </body>
 </html>
 """
@@ -59,14 +69,20 @@ class ServeTestCase(TestCase):
     def setUp(self):
         self.tmp_dir = TemporaryDirectory()
 
-        with open(os.path.join(self.tmp_dir.name, "index.html"), "w") as index:
+        with pathlib.Path(self.tmp_dir.name, "index.html").open("w") as index:
             index.write(INDEX_CONTENTS)
 
-        with open(os.path.join(self.tmp_dir.name, "page.html"), "w") as page:
+        with pathlib.Path(self.tmp_dir.name, "page.html").open("w") as page:
             page.write(PAGE_CONTENTS)
 
-        with open(os.path.join(self.tmp_dir.name, "style.css"), "w") as css:
+        with pathlib.Path(self.tmp_dir.name, "style.css").open("w") as css:
             css.write(CSS_CONTENTS)
+
+        self.blog_dir = pathlib.Path(self.tmp_dir.name, "blog")
+        self.blog_dir.mkdir()
+
+        with pathlib.Path(self.tmp_dir.name, self.blog_dir, "index.html").open("w") as index:
+            index.write(BLOG_INDEX_CONTENTS)
 
         self.client = HTTPConnection("localhost", "8000")
 
@@ -151,3 +167,13 @@ class ServeTestCase(TestCase):
         self.assertEqual(response.status, 200)
         content = response.read()
         self.assertEqual(content, PAGE_CONTENTS.encode())
+
+    def test_dir_index(self):
+        settings = Config({"deploy_path": self.tmp_dir.name})
+        self.get_server(settings)
+
+        self.client.request("GET", "/blog/")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 200)
+        content = response.read()
+        self.assertEqual(content, BLOG_INDEX_CONTENTS.encode())

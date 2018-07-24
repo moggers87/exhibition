@@ -486,7 +486,7 @@ def serve(settings):
 
             path = pathlib.Path(settings["deploy_path"], path)
 
-            if not (path.exists() and path.suffix):
+            if not (path.exists() or path.suffix):
                 for ext in Node._strip_exts:
                     new_path = path.with_suffix(ext)
                     if new_path.exists():
