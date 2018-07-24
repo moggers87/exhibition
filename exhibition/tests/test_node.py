@@ -306,6 +306,20 @@ class NodeTestCase(TestCase):
 
         self.assertEqual(node.data, {"thingy": 3, "bob": [1, 2]})
 
+    def test_cached_data(self):
+        path = pathlib.Path(self.content_path.name, "blog.yaml")
+        with path.open("w") as f:
+            f.write(YAML_FILE)
+
+        node = Node(path, None)
+
+        self.assertEqual(node.data, {"thingy": 3, "bob": [1, 2]})
+
+        with path.open("w") as f:
+            f.write("test: 1")
+
+        self.assertEqual(node.data, {"thingy": 3, "bob": [1, 2]})
+
     def test_json_data(self):
         path = pathlib.Path(self.content_path.name, "blog.json")
         with path.open("w") as f:
