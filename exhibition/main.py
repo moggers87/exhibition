@@ -21,6 +21,7 @@
 
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from importlib import import_module
+import hashlib
 import io
 import logging
 import pathlib
@@ -180,8 +181,9 @@ class Node:
     _dir_mode = 0o755
     _file_mode = 0o644
 
-    _content_start = None
+    _cache_bust_version = None
     _content = None
+    _content_start = None
     _data = None
     _marks = None
 
@@ -261,7 +263,13 @@ class Node:
         if self.parent is None:
             return self.meta["deploy_path"]
         else:
-            return str(pathlib.Path(self.parent.full_path, self.path_obj.name))
+            if self.cache_bust:
+                suffixes = "".join(self.path_obj.suffixes)
+                pth = self.path_obj.with_suffix(".{}{}".format(self.cache_bust, suffixes))
+                name = pth.name
+            else:
+                name = self.path_obj.name
+            return str(pathlib.Path(self.parent.full_path, name))
 
     @property
     def full_url(self):
@@ -279,6 +287,10 @@ class Node:
                 name = ""
             elif self.path_obj.suffix in self._strip_exts:
                 name = self.path_obj.stem
+            elif self.cache_bust:
+                suffixes = "".join(self.path_obj.suffixes)
+                pth = self.path_obj.with_suffix(".{}{}".format(self.cache_bust, suffixes))
+                name = pth.name
             else:
                 name = self.path_obj.name
 
@@ -322,6 +334,7 @@ class Node:
         if self._content_start is not None:
             # we've done this already
             return
+
         if not self.is_leaf:
             self._content_start = 0
             return
@@ -451,6 +464,25 @@ class Node:
     def siblings(self):
         """Returns all children of the parent Node, except for itself"""
         return {k: v for k, v in self.parent.children.items() if v is not self}
+
+    @property
+    def cache_bust(self):
+        if self._cache_bust_version is not None:
+            return self._cache_bust_version
+
+        cache_bust_glob = self.meta.get("cache-bust-glob", "")
+        if cache_bust_glob and self.path_obj in self.path_obj.parent.glob(cache_bust_glob):
+            hasher = hashlib.md5()
+            content = self.get_content()
+            if isinstance(content, str):
+                # content needs to be bytes just for this bit
+                content = content.encode("utf-8")
+            hasher.update(content)
+
+            self._cache_bust_version = hasher.hexdigest()[:8]
+        else:
+            self._cache_bust_version = False
+        return self._cache_bust_version
 
 
 def gen(settings):

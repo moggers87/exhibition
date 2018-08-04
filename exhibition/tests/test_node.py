@@ -21,6 +21,7 @@
 
 from tempfile import TemporaryDirectory
 from unittest import TestCase
+import hashlib
 import pathlib
 
 from exhibition.main import Node
@@ -80,6 +81,10 @@ BINARY_FILE = (
     b"\x00\x00\x00\x00\x00\x01\x00\x00\x08\x0c\n\x00\x16\x18\x17\x00:<;\x00"
     b"@BA\x00TV"
 )
+
+EMPTY_DIGEST = hashlib.md5().hexdigest()[:8]
+BINARY_DIGEST = hashlib.md5(BINARY_FILE).hexdigest()[:8]
+JSON_DIGEST = hashlib.md5(JSON_FILE.encode()).hexdigest()[:8]
 
 
 class NodeTestCase(TestCase):
@@ -420,3 +425,68 @@ class NodeTestCase(TestCase):
         parent_node = Node.from_path(parent_path)
         self.assertCountEqual(list(parent_node.children.keys()), ["page1.html", "page2.html"])
         self.assertEqual(parent_node.meta["test"], "bob")
+
+    def test_cache_bust_one_glob(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child1_path = pathlib.Path(self.content_path.name, "bust-me.jpg")
+        child1_path.touch()
+        child2_path = pathlib.Path(self.content_path.name, "page.html")
+        child2_path.touch()
+
+        meta_path = pathlib.Path(self.content_path.name, "meta.yaml")
+        with meta_path.open("w") as f:
+            f.write("cache-bust-glob: \"*.jpg\"")
+
+        parent_node = Node.from_path(parent_path)
+        parent_node.meta.update(**self.default_settings)
+        self.assertCountEqual(parent_node.children.keys(), ["bust-me.jpg", "page.html"])
+
+        child1_node = parent_node.children["bust-me.jpg"]
+        child2_node = parent_node.children["page.html"]
+
+        self.assertEqual(child1_node.full_path,
+                         str(pathlib.Path(self.deploy_path.name,
+                                          "bust-me.{}.jpg".format(EMPTY_DIGEST))))
+        self.assertEqual(child2_node.full_path,
+                         str(pathlib.Path(self.deploy_path.name, "page.html")))
+
+        self.assertEqual(child1_node.full_url, "/bust-me.{}.jpg".format(EMPTY_DIGEST))
+        self.assertEqual(child2_node.full_url, "/page")
+
+    def test_cache_bust_binary_file(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child_path = pathlib.Path(self.content_path.name, "bust-me.jpg")
+        with child_path.open("wb") as f:
+            f.write(BINARY_FILE)
+
+        parent_node = Node.from_path(parent_path)
+        parent_node.meta.update(**self.default_settings)
+        parent_node.meta["cache-bust-glob"] = "*"
+        self.assertCountEqual(parent_node.children.keys(), ["bust-me.jpg"])
+
+        child_node = parent_node.children["bust-me.jpg"]
+
+        self.assertEqual(child_node.full_path,
+                         str(pathlib.Path(self.deploy_path.name,
+                                          "bust-me.{}.jpg".format(BINARY_DIGEST))))
+
+        self.assertEqual(child_node.full_url, "/bust-me.{}.jpg".format(BINARY_DIGEST))
+
+    def test_cache_bust_text_file(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child_path = pathlib.Path(self.content_path.name, "bust-me.jpg")
+        with child_path.open("w") as f:
+            f.write(JSON_FILE)
+
+        parent_node = Node.from_path(parent_path)
+        parent_node.meta.update(**self.default_settings)
+        parent_node.meta["cache-bust-glob"] = "*"
+        self.assertCountEqual(parent_node.children.keys(), ["bust-me.jpg"])
+
+        child_node = parent_node.children["bust-me.jpg"]
+
+        self.assertEqual(child_node.full_path,
+                         str(pathlib.Path(self.deploy_path.name,
+                                          "bust-me.{}.jpg".format(JSON_DIGEST))))
+
+        self.assertEqual(child_node.full_url, "/bust-me.{}.jpg".format(JSON_DIGEST))
