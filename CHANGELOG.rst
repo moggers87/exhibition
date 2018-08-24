@@ -7,6 +7,8 @@ Unreleased
 - ``KeyError``s raised by ``Config`` now display the path of the node they are
   attached to, making debuging missing keys far easier.
 - Improved test coverage and fixed numerous bugs
+- Implemented cache busting for static assets (images, CSS, and such). Use the
+  ``cache-bust-glob`` option to control which files are cache busted.
 
 .. _zero-zero-three:
 
