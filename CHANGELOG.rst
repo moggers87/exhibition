@@ -9,6 +9,8 @@ Unreleased
 - Improved test coverage and fixed numerous bugs
 - Implemented cache busting for static assets (images, CSS, and such). Use the
   ``cache-bust-glob`` option to control which files are cache busted.
+- Implemented ``Node.get_from_path`` which can fetch a
+  :class:`exhibition.main.Node` specified by a path
 
 .. _zero-zero-three:
 
