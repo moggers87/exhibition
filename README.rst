@@ -48,6 +48,19 @@ What's the status of this project?
 There are tests, there's some documentation, and I currently use it for a
 number of websites including my personal blog.
 
+Pull requests and bug reports are most welcome, with the exception of a few items:
+
+- Functionality to upload the static site once generated. This is and shall
+  remain out of scope for this project.
+- Windows support. I've tried maintaining packages before that have Windows
+  support. I usually end up breaking it as I have no way to test out my changes
+  on a regular basis.
+- Python 2 support.
+
+Please feel free to add your site to `the wiki`_ if it uses Exhibition
+
+.. _`the wiki`: https://github.com/moggers87/exhibition/wiki
+
 .. inclusion-marker-do-not-remove-end
 
 .. |Build Status| image:: https://travis-ci.org/moggers87/exhibition.svg?branch=master
