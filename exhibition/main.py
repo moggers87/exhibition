@@ -208,6 +208,9 @@ class Node:
 
         if self.parent:
             self.parent.add_child(self)
+            self.root_node = self.parent.root_node
+        else:
+            self.root_node = self
 
     @classmethod
     def from_path(cls, path, parent=None, meta=None):
@@ -254,6 +257,38 @@ class Node:
 
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self.path_obj.name)
+
+    def get_from_path(self, path):
+        """
+        Given a relative or absolute path, return the :class:`Node` that
+        represents that path.
+
+        :param path:
+            A :class:`str` or :class:`pathlib.Path`
+        """
+        if not isinstance(path, pathlib.PurePath):
+            path = pathlib.PurePath(path)
+
+        if path.is_absolute():
+            found_node = self.root_node
+            parts = path.parts[1:]
+        else:
+            if self.is_leaf:
+                found_node = self.parent
+            else:
+                found_node = self
+            parts = path.parts
+
+        try:
+            for part in parts:
+                if part == "..":
+                    found_node = found_node.parent
+                else:
+                    found_node = found_node.children[part]
+        except KeyError as exp:
+            raise OSError("{} could not find {}".format(self, exp.args)) from exp
+
+        return found_node
 
     @property
     def full_path(self):
