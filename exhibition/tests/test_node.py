@@ -521,7 +521,8 @@ class NodeTestCase(TestCase):
         child_node = parent_node.children["images"].children["bust-me.jpg"]
         target_node = parent_node.children["pages"].children["page.html"]
 
-        self.assertEqual(child_node.get_from_path(pathlib.Path("..", "pages", "page.html")), target_node)
+        self.assertEqual(child_node.get_from_path(pathlib.Path("..", "pages", "page.html")),
+                         target_node)
 
     def test_get_from_path_absolute_str(self):
         parent_path = pathlib.Path(self.content_path.name)
@@ -599,6 +600,13 @@ class NodeTestCase(TestCase):
         self.assertEqual(parent_node.root_node, parent_node)
         self.assertEqual(parent_node.children["pages"].root_node, parent_node)
         self.assertEqual(parent_node.children["pages"].children["page.html"].root_node, parent_node)
-        self.assertEqual(parent_node.children["pages"].children["page.html"].parent.root_node, parent_node)
-        self.assertEqual(parent_node.children["pages"].children["page.html"].parent.parent.root_node, parent_node)
-        self.assertEqual(parent_node.children["pages"].children["page.html"].parent.parent.root_node, parent_node)
+        self.assertEqual(parent_node.children["pages"].children["page.html"].parent.root_node,
+                         parent_node)
+        self.assertEqual(
+            parent_node.children["pages"].children["page.html"].parent.parent.root_node,
+            parent_node
+        )
+        self.assertEqual(
+            parent_node.children["pages"].children["page.html"].parent.parent.root_node,
+            parent_node
+        )
