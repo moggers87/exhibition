@@ -269,23 +269,24 @@ class Node:
         if not isinstance(path, pathlib.PurePath):
             path = pathlib.PurePath(path)
 
-        try:
-            if path.is_absolute():
-                found_node = self.root_node
-                for part in path.parts[1:]:
-                    found_node = found_node.children[part]
+        if path.is_absolute():
+            found_node = self.root_node
+            parts = path.parts[1:]
+        else:
+            if self.is_leaf:
+                found_node = self.parent
             else:
-                if self.is_leaf:
-                    found_node = self.parent
+                found_node = self
+            parts = path.parts
+
+        try:
+            for part in parts:
+                if part == ".":
+                    continue
+                elif part == "..":
+                    found_node = found_node.parent
                 else:
-                    found_node = self
-                for part in path.parts:
-                    if part == ".":
-                        continue
-                    elif part == "..":
-                        found_node = found_node.parent
-                    else:
-                        found_node = found_node.children[part]
+                    found_node = found_node.children[part]
         except KeyError as exp:
             raise OSError("{} could not find {}".format(self, exp.args)) from exp
 
