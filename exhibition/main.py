@@ -255,6 +255,42 @@ class Node:
     def __repr__(self):
         return "<%s: %s>" % (self.__class__.__name__, self.path_obj.name)
 
+    def get_from_path(self, path):
+        """
+        Given a relative or absolute path, return the :class:`Node` that
+        represents that path.
+
+        :param path:
+            A :class:`str` or :class:`pathlib.Path`
+        """
+        if not isinstance(path, pathlib.PurePath):
+            path = pathlib.PurePath(path)
+
+        try:
+            if path.is_absolute():
+                if self.parent:
+                    found_node = self.parent.get_from_path(path)
+                else:
+                    found_node = self
+                    for part in path.parts[1:]:
+                        found_node = found_node.children[part]
+            else:
+                if self.is_leaf:
+                    found_node = self.parent
+                else:
+                    found_node = self
+                for part in path.parts:
+                    if part == ".":
+                        continue
+                    elif part == "..":
+                        found_node = found_node.parent
+                    else:
+                        found_node = found_node.children[part]
+        except KeyError as exp:
+            raise OSError("{} could not find {}".format(self, exp.args)) from exp
+
+        return found_node
+
     @property
     def full_path(self):
         """
