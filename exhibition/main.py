@@ -208,6 +208,9 @@ class Node:
 
         if self.parent:
             self.parent.add_child(self)
+            self.root_node = self.parent.root_node
+        else:
+            self.root_node = self
 
     @classmethod
     def from_path(cls, path, parent=None, meta=None):
@@ -268,12 +271,9 @@ class Node:
 
         try:
             if path.is_absolute():
-                if self.parent:
-                    found_node = self.parent.get_from_path(path)
-                else:
-                    found_node = self
-                    for part in path.parts[1:]:
-                        found_node = found_node.children[part]
+                found_node = self.root_node
+                for part in path.parts[1:]:
+                    found_node = found_node.children[part]
             else:
                 if self.is_leaf:
                     found_node = self.parent

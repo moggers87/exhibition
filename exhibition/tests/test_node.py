@@ -586,3 +586,19 @@ class NodeTestCase(TestCase):
 
         with self.assertRaises(OSError):
             child_node.get_from_path(pathlib.Path("..", "not-a-page.html"))
+
+    def test_root_node_is_kept(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        pathlib.Path(self.content_path.name, "images").mkdir()
+        pathlib.Path(self.content_path.name, "pages").mkdir()
+        child_path = pathlib.Path(self.content_path.name, "pages", "page.html")
+        child_path.touch()
+
+        parent_node = Node.from_path(parent_path)
+
+        self.assertEqual(parent_node.root_node, parent_node)
+        self.assertEqual(parent_node.children["pages"].root_node, parent_node)
+        self.assertEqual(parent_node.children["pages"].children["page.html"].root_node, parent_node)
+        self.assertEqual(parent_node.children["pages"].children["page.html"].parent.root_node, parent_node)
+        self.assertEqual(parent_node.children["pages"].children["page.html"].parent.parent.root_node, parent_node)
+        self.assertEqual(parent_node.children["pages"].children["page.html"].parent.parent.root_node, parent_node)
