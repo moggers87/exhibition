@@ -491,7 +491,7 @@ class NodeTestCase(TestCase):
 
         self.assertEqual(child_node.full_url, "/bust-me.{}.jpg".format(JSON_DIGEST))
 
-    def test_get_from_path_relative_str(self):
+    def test_get_from_path_relative_str_on_leaf(self):
         parent_path = pathlib.Path(self.content_path.name)
         pathlib.Path(self.content_path.name, "images").mkdir()
         child1_path = pathlib.Path(self.content_path.name, "images", "bust-me.jpg")
@@ -507,7 +507,7 @@ class NodeTestCase(TestCase):
 
         self.assertEqual(child_node.get_from_path("../pages/page.html"), target_node)
 
-    def test_get_from_path_relative_pathlib(self):
+    def test_get_from_path_relative_pathlib_on_leaf(self):
         parent_path = pathlib.Path(self.content_path.name)
         pathlib.Path(self.content_path.name, "images").mkdir()
         child1_path = pathlib.Path(self.content_path.name, "images", "bust-me.jpg")
@@ -522,6 +522,72 @@ class NodeTestCase(TestCase):
         target_node = parent_node.children["pages"].children["page.html"]
 
         self.assertEqual(child_node.get_from_path(pathlib.Path("..", "pages", "page.html")),
+                         target_node)
+
+    def test_get_from_path_relative_str_on_dir(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        pathlib.Path(self.content_path.name, "images").mkdir()
+        child1_path = pathlib.Path(self.content_path.name, "images", "bust-me.jpg")
+        child1_path.touch()
+        pathlib.Path(self.content_path.name, "pages").mkdir()
+        child2_path = pathlib.Path(self.content_path.name, "pages", "page.html")
+        child2_path.touch()
+
+        parent_node = Node.from_path(parent_path)
+
+        child_node = parent_node.children["images"]
+        target_node = parent_node.children["pages"].children["page.html"]
+
+        self.assertEqual(child_node.get_from_path("../pages/page.html"), target_node)
+
+    def test_get_from_path_relative_pathlib_on_dir(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        pathlib.Path(self.content_path.name, "images").mkdir()
+        child1_path = pathlib.Path(self.content_path.name, "images", "bust-me.jpg")
+        child1_path.touch()
+        pathlib.Path(self.content_path.name, "pages").mkdir()
+        child2_path = pathlib.Path(self.content_path.name, "pages", "page.html")
+        child2_path.touch()
+
+        parent_node = Node.from_path(parent_path)
+
+        child_node = parent_node.children["images"]
+        target_node = parent_node.children["pages"].children["page.html"]
+
+        self.assertEqual(child_node.get_from_path(pathlib.Path("..", "pages", "page.html")),
+                         target_node)
+
+    def test_get_from_path_relative_str_with_dot(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        pathlib.Path(self.content_path.name, "images").mkdir()
+        child1_path = pathlib.Path(self.content_path.name, "images", "bust-me.jpg")
+        child1_path.touch()
+        pathlib.Path(self.content_path.name, "pages").mkdir()
+        child2_path = pathlib.Path(self.content_path.name, "pages", "page.html")
+        child2_path.touch()
+
+        parent_node = Node.from_path(parent_path)
+
+        child_node = parent_node.children["pages"]
+        target_node = parent_node.children["pages"].children["page.html"]
+
+        self.assertEqual(child_node.get_from_path("./page.html"), target_node)
+
+    def test_get_from_path_relative_pathlib_with_dot(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        pathlib.Path(self.content_path.name, "images").mkdir()
+        child1_path = pathlib.Path(self.content_path.name, "images", "bust-me.jpg")
+        child1_path.touch()
+        pathlib.Path(self.content_path.name, "pages").mkdir()
+        child2_path = pathlib.Path(self.content_path.name, "pages", "page.html")
+        child2_path.touch()
+
+        parent_node = Node.from_path(parent_path)
+
+        child_node = parent_node.children["pages"]
+        target_node = parent_node.children["pages"].children["page.html"]
+
+        self.assertEqual(child_node.get_from_path(pathlib.Path(".", "page.html")),
                          target_node)
 
     def test_get_from_path_absolute_str(self):

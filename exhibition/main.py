@@ -281,9 +281,7 @@ class Node:
 
         try:
             for part in parts:
-                if part == ".":
-                    continue
-                elif part == "..":
+                if part == "..":
                     found_node = found_node.parent
                 else:
                     found_node = found_node.children[part]
