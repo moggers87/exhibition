@@ -453,6 +453,33 @@ class NodeTestCase(TestCase):
         self.assertEqual(child1_node.full_url, "/bust-me.{}.jpg".format(EMPTY_DIGEST))
         self.assertEqual(child2_node.full_url, "/page")
 
+    def test_cache_bust_multi_glob(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child1_path = pathlib.Path(self.content_path.name, "bust-me.jpg")
+        child1_path.touch()
+        child2_path = pathlib.Path(self.content_path.name, "page.html")
+        child2_path.touch()
+
+        meta_path = pathlib.Path(self.content_path.name, "meta.yaml")
+        with meta_path.open("w") as f:
+            f.write("cache-bust-glob:\n  - \"*.jpeg\"\n  - \"*.jpg\"")
+
+        parent_node = Node.from_path(parent_path)
+        parent_node.meta.update(**self.default_settings)
+        self.assertCountEqual(parent_node.children.keys(), ["bust-me.jpg", "page.html"])
+
+        child1_node = parent_node.children["bust-me.jpg"]
+        child2_node = parent_node.children["page.html"]
+
+        self.assertEqual(child1_node.full_path,
+                         str(pathlib.Path(self.deploy_path.name,
+                                          "bust-me.{}.jpg".format(EMPTY_DIGEST))))
+        self.assertEqual(child2_node.full_path,
+                         str(pathlib.Path(self.deploy_path.name, "page.html")))
+
+        self.assertEqual(child1_node.full_url, "/bust-me.{}.jpg".format(EMPTY_DIGEST))
+        self.assertEqual(child2_node.full_url, "/page")
+
     def test_cache_bust_binary_file(self):
         parent_path = pathlib.Path(self.content_path.name)
         child_path = pathlib.Path(self.content_path.name, "bust-me.jpg")

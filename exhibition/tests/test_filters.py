@@ -279,7 +279,7 @@ class Jinja2TestCase(TestCase):
 
             self.assertEqual(content, PLAIN_TEMPLATE)
 
-    def test_filter_glob(self):
+    def test_filter_single_glob(self):
         with TemporaryDirectory() as content_path, TemporaryDirectory() as deploy_path:
             path = pathlib.Path(content_path, "blog.htm")
             with path.open("w") as f:
@@ -289,6 +289,23 @@ class Jinja2TestCase(TestCase):
                                                        "deploy_path": deploy_path,
                                                        "filter": "exhibition.filters.jinja2",
                                                        "filter-glob": "*.htm",
+                                                       "templates": []}))
+            node.render()
+            with pathlib.Path(deploy_path, "blog.htm").open("r") as f:
+                content = f.read()
+
+            self.assertEqual(content, "<p>0</p><p>1</p><p>2</p>")
+
+    def test_filter_multi_glob(self):
+        with TemporaryDirectory() as content_path, TemporaryDirectory() as deploy_path:
+            path = pathlib.Path(content_path, "blog.htm")
+            with path.open("w") as f:
+                f.write(PLAIN_TEMPLATE)
+
+            node = Node(path, Node(path.parent, None, {"content_path": content_path,
+                                                       "deploy_path": deploy_path,
+                                                       "filter": "exhibition.filters.jinja2",
+                                                       "filter-glob": ["*.html", "*.htm"],
                                                        "templates": []}))
             node.render()
             with pathlib.Path(deploy_path, "blog.htm").open("r") as f:
