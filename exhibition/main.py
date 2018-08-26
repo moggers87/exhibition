@@ -434,9 +434,13 @@ class Node:
 
             if content_filter is not None:
                 filter_module = import_module(content_filter)
-                filter_glob = self.meta.get("filter-glob", filter_module.DEFAULT_GLOB)
-                if self.path_obj in self.path_obj.parent.glob(filter_glob):
-                    self._content = filter_module.content_filter(self, self._content)
+                globs = self.meta.get("filter-glob", filter_module.DEFAULT_GLOB)
+                if not isinstance(globs, (list, tuple)):
+                    globs = [globs]
+                for filter_glob in globs:
+                    if self.path_obj in self.path_obj.parent.glob(filter_glob):
+                        self._content = filter_module.content_filter(self, self._content)
+                        break
 
         return self._content
 
@@ -505,18 +509,22 @@ class Node:
         if self._cache_bust_version is not None:
             return self._cache_bust_version
 
-        cache_bust_glob = self.meta.get("cache-bust-glob", "")
-        if cache_bust_glob and self.path_obj in self.path_obj.parent.glob(cache_bust_glob):
-            hasher = hashlib.md5()
-            content = self.get_content()
-            if isinstance(content, str):
-                # content needs to be bytes just for this bit
-                content = content.encode("utf-8")
-            hasher.update(content)
+        self._cache_bust_version = False
+        globs = self.meta.get("cache-bust-glob", [])
+        if not isinstance(globs, (list, tuple)):
+            globs = [globs]
+        for cache_bust_glob in globs:
+            if self.path_obj in self.path_obj.parent.glob(cache_bust_glob):
+                hasher = hashlib.md5()
+                content = self.get_content()
+                if isinstance(content, str):
+                    # content needs to be bytes just for this bit
+                    content = content.encode("utf-8")
+                hasher.update(content)
 
-            self._cache_bust_version = hasher.hexdigest()[:8]
-        else:
-            self._cache_bust_version = False
+                self._cache_bust_version = hasher.hexdigest()[:8]
+                break
+
         return self._cache_bust_version
 
 
