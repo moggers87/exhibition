@@ -435,7 +435,7 @@ class NodeTestCase(TestCase):
 
         meta_path = pathlib.Path(self.content_path.name, "meta.yaml")
         with meta_path.open("w") as f:
-            f.write("cache-bust-glob: \"*.jpg\"")
+            f.write("cache_bust_glob: \"*.jpg\"")
 
         parent_node = Node.from_path(parent_path)
         parent_node.meta.update(**self.default_settings)
@@ -462,7 +462,7 @@ class NodeTestCase(TestCase):
 
         meta_path = pathlib.Path(self.content_path.name, "meta.yaml")
         with meta_path.open("w") as f:
-            f.write("cache-bust-glob:\n  - \"*.jpeg\"\n  - \"*.jpg\"")
+            f.write("cache_bust_glob:\n  - \"*.jpeg\"\n  - \"*.jpg\"")
 
         parent_node = Node.from_path(parent_path)
         parent_node.meta.update(**self.default_settings)
@@ -488,7 +488,7 @@ class NodeTestCase(TestCase):
 
         parent_node = Node.from_path(parent_path)
         parent_node.meta.update(**self.default_settings)
-        parent_node.meta["cache-bust-glob"] = "*"
+        parent_node.meta["cache_bust_glob"] = "*"
         self.assertCountEqual(parent_node.children.keys(), ["bust-me.jpg"])
 
         child_node = parent_node.children["bust-me.jpg"]
@@ -507,7 +507,7 @@ class NodeTestCase(TestCase):
 
         parent_node = Node.from_path(parent_path)
         parent_node.meta.update(**self.default_settings)
-        parent_node.meta["cache-bust-glob"] = "*"
+        parent_node.meta["cache_bust_glob"] = "*"
         self.assertCountEqual(parent_node.children.keys(), ["bust-me.jpg"])
 
         child_node = parent_node.children["bust-me.jpg"]

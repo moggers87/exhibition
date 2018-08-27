@@ -83,7 +83,7 @@ The dotted path notation that Exhibition can import to process content on a node
 
 Exhibition comes with one filter: ``exhibition.filters.jinja2``
 
-``filter-glob``
+``filter_glob``
 ^^^^^^^^^^^^^^^
 
 Matching files are processed by ``filter`` if specified, otherwise this option
@@ -91,14 +91,14 @@ does nothing.
 
 .. code-block:: yaml
 
-   filter-glob: "*.html"
+   filter_glob: "*.html"
 
-As glob patterns are fairly simple, ``filter-glob`` can also be a list of
+As glob patterns are fairly simple, ``filter_glob`` can also be a list of
 patterns:
 
 .. code-block:: yaml
 
-   filter-glob:
+   filter_glob:
      - "*.html"
      - "*.htm"
      - "robot.txt"
@@ -120,7 +120,7 @@ The path where Jinja2 templates will be found. Can be single string or a list.
 If specified, this will insert a ``{% extends %}`` statement at the beginning of
 the file content before it is passed to Jinja2.
 
-``default-block``
+``default_block``
 ~~~~~~~~~~~~~~~~~
 
 If specified, this will wrap the file content in ``{% block %}``.
@@ -138,7 +138,7 @@ Cache busting is an important tool that allows static assets (such as CSS
 files) to bypass the browser cache when the content of such files is updated,
 while still allowing high value expiry times.
 
-``cache-bust-glob``
+``cache_bust_glob``
 ^^^^^^^^^^^^^^^^^^^
 
 Matching files have their deployed path and URL changed to include a hash of
@@ -147,14 +147,14 @@ their contents. E.g. ``media/site.css`` might become
 
 .. code-block:: yaml
 
-   cache-bust-glob: "*.css"
+   cache_bust_glob: "*.css"
 
-As glob patterns are fairly simple, ``cache-bust-glob`` can also be a list of
+As glob patterns are fairly simple, ``cache_bust_glob`` can also be a list of
 patterns:
 
 .. code-block:: yaml
 
-   cache-bust-glob:
+   cache_bust_glob:
      - "*.css"
      - "*.jpg"
      - "*.jpeg"

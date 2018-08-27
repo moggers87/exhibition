@@ -151,7 +151,7 @@ def content_filter(node, content):
     :param node:
         The node being rendered
     :param content:
-        The content of the node, stripped of any YAML front matter
+        The content of the node, stripped of any YAML frontmatter
     """
     env = Environment(
         loader=FileSystemLoader(node.meta["templates"]),
@@ -169,9 +169,9 @@ def content_filter(node, content):
     if node.meta.get("extends"):
         parts.append(EXTENDS_TEMPLATE_TEMPLATE % node.meta["extends"])
 
-    if node.meta.get("default-block"):
+    if node.meta.get("default_block"):
         parts.extend([
-            START_BLOCK_TEMPLATE % node.meta["default-block"],
+            START_BLOCK_TEMPLATE % node.meta["default_block"],
             content,
             END_BLOCK_TEMPLATE,
         ])

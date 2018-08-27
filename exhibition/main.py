@@ -413,7 +413,7 @@ class Node:
         """
         Get the actual content of the Node
 
-        First calls :meth:`process_meta` to find the end any front matter that
+        First calls :meth:`process_meta` to find the end any frontmatter that
         might be present and then returns the rest of the file
 
         If ``filter`` has been specified in :attr:`meta`, that filter will be
@@ -434,7 +434,7 @@ class Node:
 
             if content_filter is not None:
                 filter_module = import_module(content_filter)
-                globs = self.meta.get("filter-glob", filter_module.DEFAULT_GLOB)
+                globs = self.meta.get("filter_glob", filter_module.DEFAULT_GLOB)
                 if not isinstance(globs, (list, tuple)):
                     globs = [globs]
                 for filter_glob in globs:
@@ -449,7 +449,7 @@ class Node:
         """
         Configuration object
 
-        Automatically loads front-matter if applicable
+        Automatically loads frontmatter if applicable
         """
         self.process_meta()
         return self._meta
@@ -510,7 +510,7 @@ class Node:
             return self._cache_bust_version
 
         self._cache_bust_version = False
-        globs = self.meta.get("cache-bust-glob", [])
+        globs = self.meta.get("cache_bust_glob", [])
         if not isinstance(globs, (list, tuple)):
             globs = [globs]
         for cache_bust_glob in globs:

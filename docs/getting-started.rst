@@ -75,13 +75,13 @@ If you wish to use template inheritance, add the following to ``site.yaml``:
 
 Where "mytemplates" is whatever directory you will store your templates in. You
 can either use the extends tag directly or you can specify ``extends`` in
-``site.yaml``. You can also specify ``default-block`` to save you from wrapping
+``site.yaml``. You can also specify ``default_block`` to save you from wrapping
 every page in ``{% block content %}``:
 
 .. code-block:: yaml
 
    extends: page.j2
-   default-block: content
+   default_block: content
 
 And then our template:
 
@@ -123,7 +123,7 @@ You can reference any data that you put in ``site.yaml`` like this - and
 there's no limit on what you can put in there.
 
 As well as ``site.yaml`` there are two additional places that settings can be
-controlled: ``meta.yaml`` and front matter.
+controlled: ``meta.yaml`` and frontmatter.
 
 Meta files
 ^^^^^^^^^^
