@@ -1,5 +1,7 @@
-Unreleased
-----------
+.. _zero-zero-four:
+
+0.0.4
+-----
 
 - Added vesrioneer
 - Fix bug where ``exhibit serve`` was not serving files with extension
