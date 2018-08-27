@@ -144,7 +144,7 @@ class Jinja2TestCase(TestCase):
             self.assertEqual(result, "<p>Title</p>\n")
 
             node = Node(mock.Mock(), None, meta={"templates": [tmp_dir],
-                                                 "extends": "bob.j2", "default-block": "content"})
+                                                 "extends": "bob.j2", "default_block": "content"})
             node.is_leaf = False
             result = jinja_filter(node, PLAIN_TEMPLATE)
             self.assertEqual(result, "<p>Title</p>\n\n<p>0</p><p>1</p><p>2</p>")
@@ -288,7 +288,7 @@ class Jinja2TestCase(TestCase):
             node = Node(path, Node(path.parent, None, {"content_path": content_path,
                                                        "deploy_path": deploy_path,
                                                        "filter": "exhibition.filters.jinja2",
-                                                       "filter-glob": "*.htm",
+                                                       "filter_glob": "*.htm",
                                                        "templates": []}))
             node.render()
             with pathlib.Path(deploy_path, "blog.htm").open("r") as f:
@@ -305,7 +305,7 @@ class Jinja2TestCase(TestCase):
             node = Node(path, Node(path.parent, None, {"content_path": content_path,
                                                        "deploy_path": deploy_path,
                                                        "filter": "exhibition.filters.jinja2",
-                                                       "filter-glob": ["*.html", "*.htm"],
+                                                       "filter_glob": ["*.html", "*.htm"],
                                                        "templates": []}))
             node.render()
             with pathlib.Path(deploy_path, "blog.htm").open("r") as f:
