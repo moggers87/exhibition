@@ -26,7 +26,9 @@ GPLv3 or later. See LICENSE for the actual text.
 Why though?
 -----------
 
-I've been using Hyde since forever, but I wasn't happy with it. I was also very unhappy with other static site generators (SSGs) that used Jinja2 for their templating needs:
+I've been using Hyde since forever, but I wasn't happy with it. I was also very
+unhappy with other static site generators (SSGs) that used Jinja2 for their
+templating needs:
 
 - Pelican and the like are too blog focused. It didn't feel in the spirit of
   those projects to have a blog and a recipe list as two separate sections to a
@@ -39,7 +41,7 @@ I've been using Hyde since forever, but I wasn't happy with it. I was also very 
     me, so starting from scratch made more sense than dealing with Hyde.
 
 There are SSGs that aren't written in Python or don't use Jinja2 for their
-templates, but I'm not interested in rewritting all the templates for the sites
+templates, but I'm not interested in rewriting all the templates for the sites
 that I have made with Hyde.
 
 What's the status of this project?
@@ -48,7 +50,20 @@ What's the status of this project?
 There are tests, there's some documentation, and I currently use it for a
 number of websites including my personal blog.
 
-Pull requests and bug reports are most welcome, with the exception of a few items:
+Please feel free to add your site to `the wiki`_ if it uses Exhibition, but
+please make sure its safe for work and not covered in adverts.
+
+.. _`the wiki`: https://github.com/moggers87/exhibition/wiki
+
+Contributions
+^^^^^^^^^^^^^
+
+I'm always looking for contributions, whether they be bug reports, bug fixes,
+feature requests, new features, or documentation. Also, feel free to open issues
+for support requests too - these are very helpful in showing me where
+documentation is required or needs improving.
+
+There are however some items I won't consider for inclusion:
 
 - Functionality to upload the static site once generated. This is and shall
   remain out of scope for this project.
@@ -56,10 +71,6 @@ Pull requests and bug reports are most welcome, with the exception of a few item
   support. I usually end up breaking it as I have no way to test out my changes
   on a regular basis.
 - Python 2 support.
-
-Please feel free to add your site to `the wiki`_ if it uses Exhibition
-
-.. _`the wiki`: https://github.com/moggers87/exhibition/wiki
 
 .. inclusion-marker-do-not-remove-end
 
