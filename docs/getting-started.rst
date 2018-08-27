@@ -146,10 +146,10 @@ will still use ``page.j2`` as their base template.
 .. note::
    ``meta.yaml`` files do not appear as nodes and won't appear in ``deploy_path``
 
-Front matter
-^^^^^^^^^^^^
+Frontmatter
+^^^^^^^^^^^
 
-Front matter is the term used to describe YAML metadata put at the beginning of
+Frontmatter is the term used to describe YAML metadata put at the beginning of
 a file. Unlike ``meta.yaml``, any settings defined (or overridden) here will
 only affect this one file.
 
