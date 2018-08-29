@@ -6,7 +6,7 @@
 - Added vesrioneer
 - Fix bug where ``exhibit serve`` was not serving files with extension
   stripping enabled
-- ``KeyError``s raised by ``Config`` now display the path of the node they are
+- A ``KeyError`` raised by ``Config`` now display the path of the node they are
   attached to, making debuging missing keys far easier.
 - Improved test coverage and fixed numerous bugs
 - Implemented cache busting for static assets (images, CSS, and such). Use the
