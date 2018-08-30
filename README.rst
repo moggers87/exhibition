@@ -18,6 +18,13 @@ What?
 
 A static site generator
 
+Where?
+------
+
+- Download: https://pypi.org/project/exhibition/
+- Source: https://github.com/moggers87/exhibition
+- Docs: https://exhibition-ssg.readthedocs.io/en/latest/
+
 License?
 --------
 
