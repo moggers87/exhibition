@@ -38,14 +38,15 @@ unhappy with other static site generators (SSGs) that used Jinja2 for their
 templating needs:
 
 - Pelican and the like are too blog focused. It didn't feel in the spirit of
-  those projects to have a blog and a recipe list as two separate sections to a
-  website.
+  those projects to have anything other than a blog and a few plain pages. I
+  wanted something more freeoform to work with various projects.
 - Hyde is everything I want, except for the complete lack of documentation and
   a massive code base that needs a lot of work to make it run on Python 3. It
   is also currently unmaintained.
 
-  - I should also mention that there are huge parts of Hyde that do nothing for
-    me, so starting from scratch made more sense than dealing with Hyde.
+  - I should also mention that there are huge parts of Hyde that do not use, so
+    starting from scratch made more sense than upgrading what would be (to me)
+    legacy code.
 
 There are SSGs that aren't written in Python or don't use Jinja2 for their
 templates, but I'm not interested in rewriting all the templates for the sites
@@ -55,7 +56,7 @@ What's the status of this project?
 ----------------------------------
 
 There are tests, there's some documentation, and I currently use it for a
-number of websites including my personal blog.
+number of websites, including my personal blog.
 
 Please feel free to add your site to `the wiki`_ if it uses Exhibition, but
 please make sure its safe for work and not covered in adverts.
