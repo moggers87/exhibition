@@ -1,11 +1,6 @@
 exhibition.filters package
 ==========================
 
-.. automodule:: exhibition.filters
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Submodules
 ----------
 
@@ -13,3 +8,10 @@ Submodules
 
    exhibition.filters.jinja2
 
+Module contents
+---------------
+
+.. automodule:: exhibition.filters
+    :members:
+    :undoc-members:
+    :show-inheritance:
