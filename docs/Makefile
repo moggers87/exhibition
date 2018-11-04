@@ -13,7 +13,7 @@ help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 apidocs:
-	cd ..; sphinx-apidoc -f -e -o docs/ exhibition tests
+	cd ..; sphinx-apidoc -f -e -o docs/ exhibition "*tests*"
 
 .PHONY: help apidocs Makefile
 
