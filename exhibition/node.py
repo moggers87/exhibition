@@ -19,20 +19,13 @@
 #
 ##
 
-from http.server import HTTPServer, SimpleHTTPRequestHandler
 from importlib import import_module
 import hashlib
-import io
-import logging
 import pathlib
-import shutil
-import threading
 
 from ruamel.yaml import YAML
 
-logger = logging.getLogger("exhibition")
-
-SITE_YAML_PATH = "site.yaml"
+from .config import Config
 
 yaml_parser = YAML(typ="safe")
 
@@ -40,131 +33,6 @@ DATA_EXTRACTORS = {
     ".yaml": yaml_parser.load,
     ".json": yaml_parser.load,
 }
-
-
-class Config:
-    """
-    Configuration object that implements a dict-like interface
-
-    If a key cannot be found in this instance, the parent :class:`Config` will
-    be searched (and its parent, etc.)
-    """
-    def __init__(self, data=None, parent=None, node=None):
-        """
-        :param data:
-            Can be one of a string, a file-like object, a dict-like object, or
-            ``None``. The first two will be assumed as YAML
-        :param parent:
-            Parent :class:`Config` or ``None`` if this is the root
-            configuration object
-        :param node:
-            The node that this object to bound to, or ``None`` if it is the
-            root configuration object
-        """
-        assert (parent is None) == (node is None), \
-            "Either both parent and node are defined or they are both None"
-
-        self.parent = parent
-        self.node = node
-        self._base_config = {}
-
-        if data:
-            self.load(data)
-
-    def load(self, data):
-        """
-        Load data into configutation object
-
-        :param data:
-            If a string or file-like object, ``data`` is parsed as if it were
-            YAML data. If a dict-like object, ``data`` is added to the internal
-            dictionary.
-
-            Otherwise an :class:`AssertionError` exception is raised
-        """
-        if isinstance(data, (str, io.IOBase)):
-            self._base_config.update(yaml_parser.load(data))
-        elif isinstance(data, dict):
-            self._base_config.update(data)
-        else:
-            raise AssertionError("data needs to be a string, file-like, or dict-like object")
-
-    @classmethod
-    def from_path(cls, path):
-        """Load YAML data from a file"""
-        with open(path) as f:
-            obj = cls(f)
-
-        return obj
-
-    def get_name(self):
-        if self.node is None:
-            return SITE_YAML_PATH
-        else:
-            return self.node.full_path
-
-    def __getitem__(self, key):
-        try:
-            return self._base_config[key]
-        except KeyError as exp:
-            exp_str = "Could not find %s in %s" % (key, self.get_name())
-            if self.parent is None:
-                raise KeyError(exp_str) from exp
-            else:
-                try:
-                    return self.parent[key]
-                except KeyError as exp_parent:
-                    raise KeyError(exp_str) from exp_parent
-
-    def __setitem__(self, key, value):
-        self._base_config[key] = value
-
-    def __contains__(self, key):
-        return key in self.keys()
-
-    def __len__(self):
-        return len(list(self.keys()))
-
-    def __iter__(self):
-        return self.keys()
-
-    def keys(self):
-        _keys_set = set()
-        for k in self._base_config.keys():
-            _keys_set.add(k)
-            yield k
-
-        if self.parent is not None:
-            for k in self.parent.keys():
-                if k not in _keys_set:
-                    _keys_set.add(k)
-                    yield k
-
-    def values(self):
-        for k in self.keys():
-            yield self[k]
-
-    def items(self):
-        for k in self.keys():
-            yield (k, self[k])
-
-    def get(self, key, default=None):
-        try:
-            return self[key]
-        except KeyError:
-            return default
-
-    def update(self, *args, **kwargs):
-        self._base_config.update(*args, **kwargs)
-
-    def copy(self):
-        klass = type(self)
-        return klass(self._base_config.copy(), parent=self.parent, node=self.node)
-
-    def __repr__(self):
-        return "<%s: %s: %s>" % (self.__class__.__name__,
-                                 self.get_name(),
-                                 self._base_config.keys())
 
 
 class Node:
@@ -526,59 +394,3 @@ class Node:
                 break
 
         return self._cache_bust_version
-
-
-def gen(settings):
-    """
-    Generate site
-
-    Deletes ``deploy_path`` first.
-    """
-    shutil.rmtree(settings["deploy_path"], True)
-    root_node = Node.from_path(pathlib.Path(settings["content_path"]), meta=settings)
-
-    for item in root_node.walk(True):
-        logger.info("Rendering %s", item.full_url)
-        item.render()
-
-
-def serve(settings):
-    """
-    Serves the generated site from ``deploy_path``
-
-    Respects settings like ``base_url`` if present.
-    """
-    logger = logging.getLogger("exhibition.server")
-
-    class ExhibitionHTTPRequestHandler(SimpleHTTPRequestHandler):
-        def translate_path(self, path):
-            path = path.strip("/")
-            if settings.get("base_url"):
-                base = settings["base_url"].strip("/")
-                if not path.startswith(base):
-                    return ""
-                path = path.lstrip(base).strip("/")
-
-            path = pathlib.Path(settings["deploy_path"], path)
-
-            if not (path.exists() or path.suffix):
-                for ext in Node._strip_exts:
-                    new_path = path.with_suffix(ext)
-                    if new_path.exists():
-                        return str(new_path)
-            elif path.is_dir():
-                new_path = pathlib.Path(path, Node._index_file)
-                if new_path.exists():
-                    return str(new_path)
-
-            return str(path)
-
-    server_address = ('localhost', 8000)
-
-    httpd = HTTPServer(server_address, ExhibitionHTTPRequestHandler)
-
-    logger.warning("Listening on http://%s:%s", *server_address)
-    t = threading.Thread(target=httpd.serve_forever, daemon=True)
-    t.start()
-
-    return (httpd, t)

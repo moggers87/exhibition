@@ -1,7 +1,7 @@
-exhibition.main module
+exhibition.node module
 ======================
 
-.. automodule:: exhibition.main
+.. automodule:: exhibition.node
     :members:
     :undoc-members:
     :show-inheritance:

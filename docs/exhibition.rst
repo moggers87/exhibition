@@ -1,11 +1,6 @@
 exhibition package
 ==================
 
-.. automodule:: exhibition
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Subpackages
 -----------
 
@@ -19,5 +14,14 @@ Submodules
 .. toctree::
 
    exhibition.command
-   exhibition.main
+   exhibition.config
+   exhibition.node
+   exhibition.utils
 
+Module contents
+---------------
+
+.. automodule:: exhibition
+    :members:
+    :undoc-members:
+    :show-inheritance:
