@@ -27,7 +27,7 @@ from jinja2.exceptions import TemplateRuntimeError
 from jinja2 import Markup
 
 from exhibition.filters.jinja2 import content_filter as jinja_filter
-from exhibition.main import Node
+from exhibition.node import Node
 
 
 PLAIN_TEMPLATE = """

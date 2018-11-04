@@ -24,7 +24,7 @@ from unittest import TestCase
 import hashlib
 import pathlib
 
-from exhibition.main import Node
+from exhibition.node import Node
 
 
 GOOD_META = """---

@@ -25,7 +25,7 @@ from unittest import TestCase, mock
 
 from ruamel.yaml import YAML
 
-from exhibition.main import Config, SITE_YAML_PATH
+from exhibition.config import Config, SITE_YAML_PATH
 
 
 YAML_DATA = """

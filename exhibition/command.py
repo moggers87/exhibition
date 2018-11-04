@@ -27,7 +27,7 @@ import logging
 
 import click
 
-from exhibition import main
+from . import config, utils
 
 
 logger = logging.getLogger("exhibition")
@@ -51,8 +51,8 @@ def gen():
     """
     Generate site from content_path
     """
-    settings = main.Config.from_path(main.SITE_YAML_PATH)
-    main.gen(settings)
+    settings = config.Config.from_path(config.SITE_YAML_PATH)
+    utils.gen(settings)
 
 
 @exhibition.command(short_help="Serve site locally")
@@ -60,8 +60,8 @@ def serve():
     """
     Serve files from deploy_path as a webserver would
     """
-    settings = main.Config.from_path(main.SITE_YAML_PATH)
-    httpd, thread = main.serve(settings)
+    settings = config.Config.from_path(config.SITE_YAML_PATH)
+    httpd, thread = utils.serve(settings)
 
     try:
         thread.join()

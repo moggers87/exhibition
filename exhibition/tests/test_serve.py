@@ -24,7 +24,8 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 import pathlib
 
-from exhibition.main import Config, serve
+from exhibition.config import Config
+from exhibition.utils import serve
 
 
 INDEX_CONTENTS = """<html>

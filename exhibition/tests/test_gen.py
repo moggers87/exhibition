@@ -24,7 +24,8 @@ from unittest import TestCase
 import os
 import pathlib
 
-from exhibition.main import gen, Config
+from exhibition.config import Config
+from exhibition.utils import gen
 
 
 class GenTestCase(TestCase):
