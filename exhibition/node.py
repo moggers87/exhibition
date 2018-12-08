@@ -101,6 +101,7 @@ class Node:
         node = cls(path, parent=parent, meta=meta)
 
         if path.is_dir():
+            children = []
             for child in path.iterdir():
                 ignored = False
                 globs = node.meta.get("ignore", [])
@@ -119,6 +120,9 @@ class Node:
                     with child.open() as co:
                         node.meta.load(co)
                 else:
+                    children.append(child)
+
+            for child in children:
                     cls.from_path(child, node)
 
         return node

@@ -63,6 +63,10 @@ bob:
     - 2
 """
 
+YAML_WITH_IGNORE = """
+ignore: "*"
+"""
+
 JSON_FILE = """
 {
     "thingy": 3,
@@ -425,6 +429,24 @@ class NodeTestCase(TestCase):
         parent_node = Node.from_path(parent_path)
         self.assertCountEqual(list(parent_node.children.keys()), ["page1.html", "page2.html"])
         self.assertEqual(parent_node.meta["test"], "bob")
+
+    def test_from_path_meta_comes_first(self):
+        parent_path = pathlib.Path(self.content_path.name)
+
+        # not sure if default ordering for files is by creation time or by
+        # name, so let's write one file here, and another after the meta.yaml
+        child1_path = pathlib.Path(self.content_path.name, "1page.html")
+        child1_path.touch()
+
+        path = pathlib.Path(self.content_path.name, "meta.yaml")
+        with path.open("w") as f:
+            f.write(YAML_WITH_IGNORE)
+
+        child2_path = pathlib.Path(self.content_path.name, "page2.html")
+        child2_path.touch()
+
+        parent_node = Node.from_path(parent_path, meta={})
+        self.assertCountEqual(list(parent_node.children.keys()), [])
 
     def test_cache_bust_one_glob(self):
         parent_path = pathlib.Path(self.content_path.name)
