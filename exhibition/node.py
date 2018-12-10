@@ -19,6 +19,7 @@
 #
 ##
 
+from collections import OrderedDict
 from importlib import import_module
 import hashlib
 import pathlib
@@ -66,7 +67,7 @@ class Node:
         """
         self.path_obj = path
         self.parent = parent
-        self.children = {}
+        self.children = OrderedDict()
 
         self.is_leaf = self.path_obj.is_file()
 
@@ -102,7 +103,16 @@ class Node:
 
         if path.is_dir():
             children = []
-            for child in path.iterdir():
+
+            dir_files = sorted(path.iterdir(), key=lambda p: p.name)
+            for child in dir_files:
+                if child.name in cls._meta_names and child.is_file():
+                    with child.open() as co:
+                        node.meta.load(co)
+                else:
+                    children.append(child)
+
+            for child in children:
                 ignored = False
                 globs = node.meta.get("ignore", [])
 
@@ -113,16 +123,7 @@ class Node:
                     if child in path.glob(glob):
                         ignored = True
                         break
-                if ignored:
-                    continue
-
-                if child.name in cls._meta_names and child.is_file():
-                    with child.open() as co:
-                        node.meta.load(co)
-                else:
-                    children.append(child)
-
-            for child in children:
+                if not ignored:
                     cls.from_path(child, node)
 
         return node
