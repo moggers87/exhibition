@@ -19,6 +19,7 @@
 #
 ##
 
+from collections import OrderedDict
 from importlib import import_module
 import hashlib
 import pathlib
@@ -58,15 +59,17 @@ class Node:
     def __init__(self, path, parent, meta=None):
         """
         :param path:
-            A :class:`pathlib.Path` that is either the ``content_path`` or a child of it.
+            A :class:`pathlib.Path` that is either the ``content_path`` or a
+            child of it.
         :param parent:
             Either another :class:`Node` or ``None``
         :param meta:
-            A dict-like object that will be passed to a :class:`Config` instance
+            A dict-like object that will be passed to a :class:`Config`
+            instance
         """
         self.path_obj = path
         self.parent = parent
-        self.children = {}
+        self.children = OrderedDict()
 
         self.is_leaf = self.path_obj.is_file()
 
@@ -84,16 +87,21 @@ class Node:
     def from_path(cls, path, parent=None, meta=None):
         """
         Given a :class:`pathlib.Path`, create a Node from that path as well as
-        any children
+        any children. Children are loaded in Unicode codepoint order - this
+        order is preserved in ``Node.children`` if you're unsure what that
+        means.
 
-        If the path is not a file or a dir, an :class:`AssertionError` is raised
+        If the path is not a file or a dir, an :class:`AssertionError` is
+        raised
 
         :param path:
-            A :class:`pathlib.Path` that is either the ``content_path`` or a child of it.
+            A :class:`pathlib.Path` that is either the ``content_path`` or a
+            child of it.
         :param parent:
             Either another :class:`Node` or ``None``
         :param meta:
-            A dict-like object that will be passed to a :class:`Config` instance
+            A dict-like object that will be passed to a :class:`Config`
+            instance
         """
         # path should be a pathlib object
         assert path.is_file() or path.is_dir()
@@ -101,7 +109,17 @@ class Node:
         node = cls(path, parent=parent, meta=meta)
 
         if path.is_dir():
-            for child in path.iterdir():
+            children = []
+
+            dir_files = sorted(path.iterdir(), key=lambda p: p.name)
+            for child in dir_files:
+                if child.name in cls._meta_names and child.is_file():
+                    with child.open() as co:
+                        node.meta.load(co)
+                else:
+                    children.append(child)
+
+            for child in children:
                 ignored = False
                 globs = node.meta.get("ignore", [])
 
@@ -112,13 +130,7 @@ class Node:
                     if child in path.glob(glob):
                         ignored = True
                         break
-                if ignored:
-                    continue
-
-                if child.name in cls._meta_names and child.is_file():
-                    with child.open() as co:
-                        node.meta.load(co)
-                else:
+                if not ignored:
                     cls.from_path(child, node)
 
         return node
@@ -213,7 +225,8 @@ class Node:
 
     def render(self):
         """
-        Process node and either create the directory or write contents of file to ``deploy_path``
+        Process node and either create the directory or write contents of file
+        to ``deploy_path``
         """
         if not self.is_leaf:
             pathlib.Path(self.full_path).mkdir(self._dir_mode)

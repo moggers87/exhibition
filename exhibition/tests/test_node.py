@@ -63,6 +63,10 @@ bob:
     - 2
 """
 
+YAML_WITH_IGNORE = """
+ignore: "*"
+"""
+
 JSON_FILE = """
 {
     "thingy": 3,
@@ -383,7 +387,7 @@ class NodeTestCase(TestCase):
         child2_path.touch()
 
         parent_node = Node.from_path(parent_path)
-        self.assertCountEqual(list(parent_node.children.keys()), ["page1.html", "page2.html"])
+        self.assertEqual(list(parent_node.children.keys()), ["page1.html", "page2.html"])
 
     def test_from_path_and_ignore(self):
         parent_path = pathlib.Path(self.content_path.name)
@@ -395,7 +399,7 @@ class NodeTestCase(TestCase):
         child3_path.touch()
 
         parent_node = Node.from_path(parent_path, meta={"ignore": "*.html"})
-        self.assertCountEqual(list(parent_node.children.keys()), ["picture.jpg"])
+        self.assertEqual(list(parent_node.children.keys()), ["picture.jpg"])
 
     def test_from_path_and_ignore_list(self):
         parent_path = pathlib.Path(self.content_path.name)
@@ -409,7 +413,7 @@ class NodeTestCase(TestCase):
         child4_path.touch()
 
         parent_node = Node.from_path(parent_path, meta={"ignore": ["*.html", "*.gif"]})
-        self.assertCountEqual(list(parent_node.children.keys()), ["picture.jpg"])
+        self.assertEqual(list(parent_node.children.keys()), ["picture.jpg"])
 
     def test_from_path_with_meta(self):
         parent_path = pathlib.Path(self.content_path.name)
@@ -423,8 +427,26 @@ class NodeTestCase(TestCase):
             f.write("test: bob")
 
         parent_node = Node.from_path(parent_path)
-        self.assertCountEqual(list(parent_node.children.keys()), ["page1.html", "page2.html"])
+        self.assertEqual(list(parent_node.children.keys()), ["page1.html", "page2.html"])
         self.assertEqual(parent_node.meta["test"], "bob")
+
+    def test_from_path_meta_comes_first(self):
+        parent_path = pathlib.Path(self.content_path.name)
+
+        # not sure if default ordering for files is by creation time or by
+        # name, so let's write one file here, and another after the meta.yaml
+        child1_path = pathlib.Path(self.content_path.name, "1page.html")
+        child1_path.touch()
+
+        path = pathlib.Path(self.content_path.name, "meta.yaml")
+        with path.open("w") as f:
+            f.write(YAML_WITH_IGNORE)
+
+        child2_path = pathlib.Path(self.content_path.name, "page2.html")
+        child2_path.touch()
+
+        parent_node = Node.from_path(parent_path, meta={})
+        self.assertEqual(list(parent_node.children.keys()), [])
 
     def test_cache_bust_one_glob(self):
         parent_path = pathlib.Path(self.content_path.name)
@@ -439,7 +461,7 @@ class NodeTestCase(TestCase):
 
         parent_node = Node.from_path(parent_path)
         parent_node.meta.update(**self.default_settings)
-        self.assertCountEqual(parent_node.children.keys(), ["bust-me.jpg", "page.html"])
+        self.assertEqual(list(parent_node.children.keys()), ["bust-me.jpg", "page.html"])
 
         child1_node = parent_node.children["bust-me.jpg"]
         child2_node = parent_node.children["page.html"]
@@ -466,7 +488,7 @@ class NodeTestCase(TestCase):
 
         parent_node = Node.from_path(parent_path)
         parent_node.meta.update(**self.default_settings)
-        self.assertCountEqual(parent_node.children.keys(), ["bust-me.jpg", "page.html"])
+        self.assertEqual(list(parent_node.children.keys()), ["bust-me.jpg", "page.html"])
 
         child1_node = parent_node.children["bust-me.jpg"]
         child2_node = parent_node.children["page.html"]
@@ -489,7 +511,7 @@ class NodeTestCase(TestCase):
         parent_node = Node.from_path(parent_path)
         parent_node.meta.update(**self.default_settings)
         parent_node.meta["cache_bust_glob"] = "*"
-        self.assertCountEqual(parent_node.children.keys(), ["bust-me.jpg"])
+        self.assertEqual(list(parent_node.children.keys()), ["bust-me.jpg"])
 
         child_node = parent_node.children["bust-me.jpg"]
 
@@ -508,7 +530,7 @@ class NodeTestCase(TestCase):
         parent_node = Node.from_path(parent_path)
         parent_node.meta.update(**self.default_settings)
         parent_node.meta["cache_bust_glob"] = "*"
-        self.assertCountEqual(parent_node.children.keys(), ["bust-me.jpg"])
+        self.assertEqual(list(parent_node.children.keys()), ["bust-me.jpg"])
 
         child_node = parent_node.children["bust-me.jpg"]
 
