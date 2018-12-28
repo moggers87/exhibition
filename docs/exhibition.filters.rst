@@ -6,6 +6,7 @@ Submodules
 
 .. toctree::
 
+   exhibition.filters.external
    exhibition.filters.jinja2
 
 Module contents

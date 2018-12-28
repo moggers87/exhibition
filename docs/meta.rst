@@ -131,6 +131,19 @@ If specified, this will wrap the file content in ``{% block %}``.
 Markdown options as specified in the `Markdown documentation
 <https://python-markdown.github.io/reference/#markdown>`_.
 
+External Command
+^^^^^^^^^^^^^^^^
+
+external_cmd
+~~~~~~~~~~~~
+
+The command to run. This should use the placeholders ``{INPUT}`` and
+``{OUTPUT}`` for the input and output files respectively. For example:
+
+.. code-block: yaml
+
+   external_cmd: "cat {INPUT} | sort > {OUTPUT}"
+
 Cache busting
 -------------
 

@@ -21,11 +21,13 @@
 
 from tempfile import TemporaryDirectory
 from unittest import TestCase, mock
+import base64
 import pathlib
 
 from jinja2.exceptions import TemplateRuntimeError
 from jinja2 import Markup
 
+from exhibition.filters.external import content_filter as external_filter
 from exhibition.filters.jinja2 import content_filter as jinja_filter
 from exhibition.node import Node
 
@@ -90,6 +92,38 @@ METAREJECT_TEMPLATE = """
 {{ child.meta.bob }}
 {%- endfor %}
 """.strip()
+
+
+class ExternalCommandTestCase(TestCase):
+    def test_input_output(self):
+        content = "hello, how are you?"
+        node = Node(mock.Mock(), None, meta={"external_cmd": "cat {INPUT} | base64 > {OUTPUT}"})
+        node._content_start = 0
+        output = external_filter(node, content)
+
+        expected_output = base64.b64encode(content.encode()).decode() + "\n"
+        self.assertEqual(output, expected_output)
+
+    def test_filter_glob(self):
+        with TemporaryDirectory() as content_path, TemporaryDirectory() as deploy_path:
+            # default glob is *.*
+            for filename in ["blog.html", "mytext.txt"]:
+                content = "hello {}, how are you?".format(filename)
+                path = pathlib.Path(content_path, "blog.htm")
+                with path.open("w") as f:
+                    f.write(content)
+
+                node = Node(path, Node(path.parent, None,
+                            {"content_path": content_path,
+                             "deploy_path": deploy_path,
+                             "filter": "exhibition.filters.external",
+                             "external_cmd": "cat {INPUT} | base64 > {OUTPUT}"}))
+                node.render()
+                with pathlib.Path(deploy_path, "blog.htm").open("r") as f:
+                    output = f.read()
+
+                expected_output = base64.b64encode(content.encode()).decode() + "\n"
+                self.assertEqual(output, expected_output)
 
 
 class Jinja2TestCase(TestCase):
