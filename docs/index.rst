@@ -18,6 +18,7 @@ Welcome to Exhibition's documentation!
    getting-started
    commandline
    meta
+   filters
    Exhibition API Guide <modules>
    changelog
 
