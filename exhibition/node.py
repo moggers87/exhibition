@@ -35,6 +35,8 @@ DATA_EXTRACTORS = {
     ".json": yaml_parser.load,
 }
 
+DEFAULT_STRIP_EXTS = [".html"]
+
 
 class Node:
     """
@@ -42,7 +44,6 @@ class Node:
     """
     _meta_names = ["meta.yaml", "meta.yml"]
     _index_file = "index.html"
-    _strip_exts = [".html"]
 
     _meta_header = "---\n"
     _meta_footer = "---\n"
@@ -200,7 +201,7 @@ class Node:
         elif self.is_leaf:
             if self.path_obj.name == self._index_file:
                 name = ""
-            elif self.path_obj.suffix in self._strip_exts:
+            elif self.path_obj.suffix in self.strip_exts:
                 name = self.path_obj.stem
             elif self.cache_bust:
                 suffixes = "".join(self.path_obj.suffixes)
@@ -407,3 +408,11 @@ class Node:
                 break
 
         return self._cache_bust_version
+
+    @property
+    def strip_exts(self):
+        strip_exts = self.meta.get("strip_exts", DEFAULT_STRIP_EXTS)
+        if not isinstance(strip_exts, (list, tuple)):
+            strip_exts = [strip_exts]
+
+        return strip_exts

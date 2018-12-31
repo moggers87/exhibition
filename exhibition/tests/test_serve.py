@@ -98,7 +98,7 @@ class ServeTestCase(TestCase):
         self.server = httpd
 
     def test_fetch_file(self):
-        settings = Config({"deploy_path": self.tmp_dir.name})
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
         self.get_server(settings)
 
         self.client.request("GET", "/style.css")
@@ -108,7 +108,8 @@ class ServeTestCase(TestCase):
         self.assertEqual(content, CSS_CONTENTS.encode())
 
     def test_fetch_file_with_prefix(self):
-        settings = Config({"deploy_path": self.tmp_dir.name, "base_url": "/bob/"})
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name,
+                           "base_url": "/bob/"})
         self.get_server(settings)
 
         self.client.request("GET", "/bob/style.css")
@@ -122,7 +123,7 @@ class ServeTestCase(TestCase):
         self.assertEqual(response.status, 404)
 
     def test_index(self):
-        settings = Config({"deploy_path": self.tmp_dir.name})
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
         self.get_server(settings)
 
         self.client.request("GET", "/")
@@ -132,7 +133,7 @@ class ServeTestCase(TestCase):
         self.assertEqual(content, INDEX_CONTENTS.encode())
 
     def test_404(self):
-        settings = Config({"deploy_path": self.tmp_dir.name})
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
         self.get_server(settings)
 
         self.client.request("GET", "/not-existing.html")
@@ -140,7 +141,7 @@ class ServeTestCase(TestCase):
         self.assertEqual(response.status, 404)
 
     def test_stripped_extension(self):
-        settings = Config({"deploy_path": self.tmp_dir.name})
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
         self.get_server(settings)
 
         self.client.request("GET", "/page")
@@ -149,8 +150,23 @@ class ServeTestCase(TestCase):
         content = response.read()
         self.assertEqual(content, PAGE_CONTENTS.encode())
 
+    def test_custom_stripped_extension(self):
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name,
+                           "strip_exts": ".css"})
+        self.get_server(settings)
+
+        self.client.request("GET", "/style")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 200)
+        content = response.read()
+        self.assertEqual(content, CSS_CONTENTS.encode())
+
+        self.client.request("GET", "/page")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 404)
+
     def test_stripped_extension_and_trailing_slash(self):
-        settings = Config({"deploy_path": self.tmp_dir.name})
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
         self.get_server(settings)
 
         self.client.request("GET", "/page/")
@@ -160,7 +176,7 @@ class ServeTestCase(TestCase):
         self.assertEqual(content, PAGE_CONTENTS.encode())
 
     def test_stripped_extension_with_extension(self):
-        settings = Config({"deploy_path": self.tmp_dir.name})
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
         self.get_server(settings)
 
         self.client.request("GET", "/page.html")
@@ -170,7 +186,7 @@ class ServeTestCase(TestCase):
         self.assertEqual(content, PAGE_CONTENTS.encode())
 
     def test_stripped_extension_not_exists(self):
-        settings = Config({"deploy_path": self.tmp_dir.name})
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
         self.get_server(settings)
 
         self.client.request("GET", "/unknown")
@@ -178,7 +194,7 @@ class ServeTestCase(TestCase):
         self.assertEqual(response.status, 404)
 
     def test_dir_index(self):
-        settings = Config({"deploy_path": self.tmp_dir.name})
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
         self.get_server(settings)
 
         self.client.request("GET", "/blog/")
@@ -188,7 +204,7 @@ class ServeTestCase(TestCase):
         self.assertEqual(content, BLOG_INDEX_CONTENTS.encode())
 
     def test_dir_without_index(self):
-        settings = Config({"deploy_path": self.tmp_dir.name})
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
         index = pathlib.Path(self.blog_dir, "index.html")
         index.unlink()
         self.assertFalse(index.exists())
