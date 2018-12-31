@@ -18,13 +18,15 @@ Inheritance
 One important aspect of Exhibition's configuration system is that for a given
 node (a file or a folder), a key is search for in the following way:
 
-1. The current node is checked for the
-   specified key. If it's found, it is returned. Otherwise carry on to 2.
+1. The current node is checked for the specified key. If it's found, it is
+   returned. Otherwise carry on to 2.
 2. The parent of the current node is checked, and if the specified key is not
    found here then *its* parent is checked the same way (and so on), until the
    root node is found.
-3. If the root node does not have the specified key, then ``site.yaml`` is searched.
-4. Only once ``site.yaml`` has been searched is a :class:`KeyError` raised.
+3. If the root node does not have the specified key, then ``site.yaml`` is
+   searched.
+4. Only once ``site.yaml`` has been searched is a :class:`KeyError` raised if
+   the key cannot be found.
 
 Mandatory
 ---------
@@ -76,8 +78,8 @@ Exhibition about the prefix so it can be added to all URLs
 Filters
 -------
 
-` `filter``
-^^^^^^^^^^^
+``filter``
+^^^^^^^^^^
 
 The dotted path notation that Exhibition can import to process content on a node.
 
@@ -140,7 +142,7 @@ external_cmd
 The command to run. This should use the placeholders ``{INPUT}`` and
 ``{OUTPUT}`` for the input and output files respectively. For example:
 
-.. code-block: yaml
+.. code-block:: yaml
 
    external_cmd: "cat {INPUT} | sort > {OUTPUT}"
 
