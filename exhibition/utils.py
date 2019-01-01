@@ -74,7 +74,7 @@ class ExhibitionBaseHTTPRequestHandler(SimpleHTTPRequestHandler):
                 if new_path.exists():
                     return str(new_path)
         elif path.is_dir():
-            new_path = pathlib.Path(path, Node._index_file)
+            new_path = pathlib.Path(path, node.index_file)
             if new_path.exists():
                 return str(new_path)
 

@@ -36,6 +36,7 @@ DATA_EXTRACTORS = {
 }
 
 DEFAULT_STRIP_EXTS = [".html"]
+DEFAULT_INDEX_FILE = "index.html"
 
 
 class Node:
@@ -43,7 +44,6 @@ class Node:
     A node represents a file or directory
     """
     _meta_names = ["meta.yaml", "meta.yml"]
-    _index_file = "index.html"
 
     _meta_header = "---\n"
     _meta_footer = "---\n"
@@ -199,7 +199,7 @@ class Node:
 
             return base_url
         elif self.is_leaf:
-            if self.path_obj.name == self._index_file:
+            if self.path_obj.name == self.index_file:
                 name = ""
             elif self.path_obj.suffix in self.strip_exts:
                 name = self.path_obj.stem
@@ -416,3 +416,9 @@ class Node:
             strip_exts = [strip_exts]
 
         return strip_exts
+
+    @property
+    def index_file(self):
+        index_file = self.meta.get("index_file", DEFAULT_INDEX_FILE)
+
+        return index_file

@@ -794,3 +794,37 @@ class NodeTestCase(TestCase):
 
         self.assertEqual(child_node.strip_exts, [])
         self.assertEqual(child_node.full_url, "/blog.html")
+
+    def test_index_file_default(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child1_path = pathlib.Path(self.content_path.name, "index.html")
+        child1_path.touch()
+        child2_path = pathlib.Path(self.content_path.name, "blog.html")
+        child2_path.touch()
+
+        parent_node = Node(parent_path, None, meta=self.default_settings)
+        child1_node = Node(child1_path, parent_node)
+        child2_node = Node(child2_path, parent_node)
+
+        self.assertEqual(child1_node.index_file, "index.html")
+        self.assertEqual(child1_node.full_url, "/")
+        self.assertEqual(child2_node.index_file, "index.html")
+        self.assertEqual(child2_node.full_url, "/blog")
+
+    def test_index_file_custom(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child1_path = pathlib.Path(self.content_path.name, "index.html")
+        child1_path.touch()
+        child2_path = pathlib.Path(self.content_path.name, "blog.html")
+        child2_path.touch()
+
+        settings = {"index_file": "blog.html"}
+        settings.update(self.default_settings)
+        parent_node = Node(parent_path, None, meta=settings)
+        child1_node = Node(child1_path, parent_node)
+        child2_node = Node(child2_path, parent_node)
+
+        self.assertEqual(child1_node.index_file, "blog.html")
+        self.assertEqual(child1_node.full_url, "/index")
+        self.assertEqual(child2_node.index_file, "blog.html")
+        self.assertEqual(child2_node.full_url, "/")

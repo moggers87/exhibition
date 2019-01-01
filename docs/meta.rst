@@ -98,6 +98,13 @@ You can also specify multiple file extensions:
         - .html
         - .htm
 
+``index_file``
+^^^^^^^^^^^^^^
+
+Specify the name file name of the "index" file for a directory. By default this
+is ``index.html``, as it is on most web servers. If you change this settings,
+be sure to update your web server's configuration to reflect this change.
+
 Filters
 -------
 
