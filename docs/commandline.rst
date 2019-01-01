@@ -1,5 +1,5 @@
-exhibit commandline script
-==========================
+``exhibit`` commandline script
+==============================
 
 
 

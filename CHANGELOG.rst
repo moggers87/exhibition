@@ -31,32 +31,32 @@ Fixed
 0.0.4
 -----
 
-- Added vesrioneer
+- Added vesrioneer.
 - Fix bug where ``exhibit serve`` was not serving files with extension
-  stripping enabled
+  stripping enabled.
 - A ``KeyError`` raised by ``Config`` now display the path of the node they are
   attached to, making debuging missing keys far easier.
-- Improved test coverage and fixed numerous bugs
+- Improved test coverage and fixed numerous bugs.
 - Implemented cache busting for static assets (images, CSS, and such). Use the
   ``cache_bust_glob`` option to control which files are cache busted.
 - Implemented ``Node.get_from_path`` which can fetch a
-  :class:`exhibition.main.Node` specified by a path
-- Make all Exhibition defined meta keys use underscores not hyphens
+  :class:`exhibition.main.Node` specified by a path.
+- Make all Exhibition defined meta keys use underscores not hyphens.
 
 .. _zero-zero-three:
 
 0.0.3
 -----
 
-- Fix bug where extension stripping was not being applied
+- Fix bug where extension stripping was not being applied.
 
 .. _zero-zero-two:
 
 0.0.2
 -----
 
-- Fixed trove classifiers
-- Add ``__version__`` to ``exhibition.__init__``
+- Fixed trove classifiers.
+- Add ``__version__`` to ``exhibition.__init__``.
 
 .. _zero-zero-one:
 
@@ -65,7 +65,7 @@ Fixed
 
 Everything is new! Some choice features:
 
-- Configuration via YAML files and YAML front matter
-- Jinja2 template engine is provided by default
-- A local HTTP server for development work
-- Less than 2000 lines of code, including tests
+- Configuration via YAML files and YAML front matter.
+- Jinja2 template engine is provided by default.
+- A local HTTP server for development work.
+- Less than 2000 lines of code, including tests.
