@@ -75,6 +75,29 @@ As glob patterns are fairly simple, ``ignore`` can also be a list of patterns:
 If your site isn't deployed to the root of a domain, use this setting to tell
 Exhibition about the prefix so it can be added to all URLs
 
+``strip_exts``
+^^^^^^^^^^^^^^
+
+Specifies if certain files should have their extensions removed when being
+referenced via ``Node.full_url``. When deploying, this does not change the
+filename, so you will need to configure your web server to serve those files
+correctly.
+
+By default, this will be applied to files ending in ``.html``, to disable this
+feature use the following:
+
+.. code-block:: yaml
+
+    strip_exts:
+
+You can also specify multiple file extensions:
+
+.. code-block:: yaml
+
+    strip_exts:
+        - .html
+        - .htm
+
 Filters
 -------
 

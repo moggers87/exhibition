@@ -725,3 +725,72 @@ class NodeTestCase(TestCase):
             parent_node.children["pages"].children["page.html"].parent.parent.root_node,
             parent_node
         )
+
+    def test_strip_exts_default(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child_path = pathlib.Path(self.content_path.name, "blog.html")
+        child_path.touch()
+
+        parent_node = Node(parent_path, None, meta=self.default_settings)
+        child_node = Node(child_path, parent_node)
+
+        self.assertEqual(child_node.strip_exts, [".html"])
+        self.assertEqual(child_node.full_url, "/blog")
+
+    def test_strip_exts_custom(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child_path = pathlib.Path(self.content_path.name, "blog.tw2")
+        child_path.touch()
+
+        settings = {"strip_exts": [".tw2"]}
+        settings.update(self.default_settings)
+        parent_node = Node(parent_path, None, meta=settings)
+        child_node = Node(child_path, parent_node)
+
+        self.assertEqual(child_node.strip_exts, [".tw2"])
+        self.assertEqual(child_node.full_url, "/blog")
+
+    def test_strip_exts_multiple(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child1_path = pathlib.Path(self.content_path.name, "blog.bluh")
+        child1_path.touch()
+        child2_path = pathlib.Path(self.content_path.name, "story.tw2")
+        child2_path.touch()
+
+        settings = {"strip_exts": [".tw2", ".bluh"]}
+        settings.update(self.default_settings)
+        parent_node = Node(parent_path, None, meta=settings)
+        child1_node = Node(child1_path, parent_node)
+        child2_node = Node(child2_path, parent_node)
+
+        self.assertEqual(child1_node.strip_exts, [".tw2", ".bluh"])
+        self.assertEqual(child1_node.full_url, "/blog")
+
+        self.assertEqual(child2_node.strip_exts, [".tw2", ".bluh"])
+        self.assertEqual(child2_node.full_url, "/story")
+
+    def test_strip_exts_not_a_list(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child_path = pathlib.Path(self.content_path.name, "blog.html")
+        child_path.touch()
+
+        settings = {"strip_exts": ".html"}
+        settings.update(self.default_settings)
+        parent_node = Node(parent_path, None, meta=settings)
+        child_node = Node(child_path, parent_node)
+
+        self.assertEqual(child_node.strip_exts, [".html"])
+        self.assertEqual(child_node.full_url, "/blog")
+
+    def test_strip_exts_disabled(self):
+        parent_path = pathlib.Path(self.content_path.name)
+        child_path = pathlib.Path(self.content_path.name, "blog.html")
+        child_path.touch()
+
+        settings = {"strip_exts": []}
+        settings.update(self.default_settings)
+        parent_node = Node(parent_path, None, meta=settings)
+        child_node = Node(child_path, parent_node)
+
+        self.assertEqual(child_node.strip_exts, [])
+        self.assertEqual(child_node.full_url, "/blog.html")

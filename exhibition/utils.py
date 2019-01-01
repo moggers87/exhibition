@@ -44,6 +44,43 @@ def gen(settings):
         item.render()
 
 
+class ExhibitionBaseHTTPRequestHandler(SimpleHTTPRequestHandler):
+    def _sanitise_path(self, path):
+        """ Strip leading and trailing / as well as base_url, if preset """
+        path = path.strip("/")
+        if self._settings.get("base_url"):
+            base = self._settings["base_url"].strip("/")
+            if not path.startswith(base):
+                return
+            path = path.lstrip(base).strip("/")
+
+        return path
+
+    def translate_path(self, path):
+        path = self._sanitise_path(path)
+        root_node = Node.from_path(pathlib.Path(self._settings["content_path"]),
+                                   meta=self._settings)
+
+        try:
+            node = root_node.get_from_path(pathlib.PurePath(path).parent or path)
+        except (OSError, TypeError):
+            return ""
+
+        path = pathlib.Path(self._settings["deploy_path"], path)
+
+        if not (path.exists() or path.suffix):
+            for ext in node.strip_exts:
+                new_path = path.with_suffix(ext)
+                if new_path.exists():
+                    return str(new_path)
+        elif path.is_dir():
+            new_path = pathlib.Path(path, Node._index_file)
+            if new_path.exists():
+                return str(new_path)
+
+        return str(path)
+
+
 def serve(settings):
     """
     Serves the generated site from ``deploy_path``
@@ -52,30 +89,11 @@ def serve(settings):
     """
     logger = logging.getLogger("exhibition.server")
 
-    class ExhibitionHTTPRequestHandler(SimpleHTTPRequestHandler):
-        def translate_path(self, path):
-            path = path.strip("/")
-            if settings.get("base_url"):
-                base = settings["base_url"].strip("/")
-                if not path.startswith(base):
-                    return ""
-                path = path.lstrip(base).strip("/")
-
-            path = pathlib.Path(settings["deploy_path"], path)
-
-            if not (path.exists() or path.suffix):
-                for ext in Node._strip_exts:
-                    new_path = path.with_suffix(ext)
-                    if new_path.exists():
-                        return str(new_path)
-            elif path.is_dir():
-                new_path = pathlib.Path(path, Node._index_file)
-                if new_path.exists():
-                    return str(new_path)
-
-            return str(path)
-
     server_address = ('localhost', 8000)
+
+    # this is quite ewwww, but whatever.
+    class ExhibitionHTTPRequestHandler(ExhibitionBaseHTTPRequestHandler):
+        _settings = settings
 
     httpd = HTTPServer(server_address, ExhibitionHTTPRequestHandler)
 
