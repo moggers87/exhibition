@@ -1,3 +1,31 @@
+.. _zero-one-zero:
+
+0.1.0
+-----
+
+The *"I'd almost recommand it to my friends"* release.
+
+Added
+~~~~~
+
+- Added Python 3.7 support.
+- Add the external command filter.
+- Document Jinja2 filter.
+- Add ``strip_exts`` as an user configurable setting.
+- Add ``index_file`` as an user configurable setting.
+
+Removed
+~~~~~~~
+
+- Removed Python 3.4 support.
+
+Fixed
+~~~~~
+
+- Reorganised package so that code is easier to manage.
+- Make node loading deterministic, meta files loaded first and then
+  alphabetical order for the rest.
+
 .. _zero-zero-four:
 
 0.0.4
