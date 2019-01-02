@@ -6,6 +6,11 @@
 Welcome to Exhibition's documentation!
 ======================================
 
+.. image:: _static/header.png
+    :alt: Exhibition, a static site generator
+    :align: left
+    :target: https://github.com/moggers87/exhibition
+
 .. include:: ../README.rst
   :start-after: inclusion-marker-do-not-remove-start
   :end-before: inclusion-marker-do-not-remove-end
