@@ -27,13 +27,14 @@ import logging
 
 import click
 
-from . import config, utils
+from . import config, utils, __version__
 
 
 logger = logging.getLogger("exhibition")
 
 
 @click.group()
+@click.version_option(version=__version__)
 @click.option("-v", "--verbose", count=True,
               help="Verbose output, can be used multiple times to increase logging level")
 def exhibition(verbose):
