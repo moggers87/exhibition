@@ -27,8 +27,7 @@ import logging
 
 import click
 
-from . import config, utils, __version__
-
+from . import __version__, config, utils
 
 logger = logging.getLogger("exhibition")
 

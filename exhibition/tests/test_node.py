@@ -26,7 +26,6 @@ import pathlib
 
 from exhibition.node import Node
 
-
 GOOD_META = """---
 thingy: 3
 ---
