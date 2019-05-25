@@ -24,13 +24,12 @@ from unittest import TestCase, mock
 import base64
 import pathlib
 
-from jinja2.exceptions import TemplateRuntimeError
 from jinja2 import Markup
+from jinja2.exceptions import TemplateRuntimeError
 
 from exhibition.filters.external import content_filter as external_filter
 from exhibition.filters.jinja2 import content_filter as jinja_filter
 from exhibition.node import Node
-
 
 PLAIN_TEMPLATE = """
 {% for i in range(3) -%}

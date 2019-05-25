@@ -27,7 +27,6 @@ import pathlib
 from exhibition.config import Config
 from exhibition.utils import serve
 
-
 INDEX_CONTENTS = """<html>
     <head>
         <title>Hello</title>

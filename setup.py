@@ -1,6 +1,6 @@
-from setuptools import setup, find_packages
-import versioneer
+from setuptools import find_packages, setup
 
+import versioneer
 
 with open("README.rst", "r") as f:
     long_desc = f.read()
