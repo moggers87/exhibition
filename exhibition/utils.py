@@ -80,6 +80,10 @@ class ExhibitionBaseHTTPRequestHandler(SimpleHTTPRequestHandler):
 
         return str(path)
 
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store")
+        return super().end_headers()
+
 
 def serve(settings):
     """
