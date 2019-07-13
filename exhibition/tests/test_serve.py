@@ -105,6 +105,8 @@ class ServeTestCase(TestCase):
         self.assertEqual(response.status, 200)
         content = response.read()
         self.assertEqual(content, CSS_CONTENTS.encode())
+        headers = dict(response.getheaders())
+        self.assertEqual(headers["Cache-Control"], "no-store")
 
     def test_fetch_file_with_prefix(self):
         settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name,
@@ -130,6 +132,8 @@ class ServeTestCase(TestCase):
         self.assertEqual(response.status, 200)
         content = response.read()
         self.assertEqual(content, INDEX_CONTENTS.encode())
+        headers = dict(response.getheaders())
+        self.assertEqual(headers["Cache-Control"], "no-store")
 
     def test_404(self):
         settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
@@ -138,6 +142,8 @@ class ServeTestCase(TestCase):
         self.client.request("GET", "/not-existing.html")
         response = self.client.getresponse()
         self.assertEqual(response.status, 404)
+        headers = dict(response.getheaders())
+        self.assertEqual(headers["Cache-Control"], "no-store")
 
     def test_stripped_extension(self):
         settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
