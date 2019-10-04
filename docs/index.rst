@@ -25,6 +25,7 @@ Welcome to Exhibition's documentation!
    meta
    filters
    Exhibition API Guide <modules>
+   security
    changelog
 
 

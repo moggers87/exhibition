@@ -80,7 +80,24 @@ There are however some items I won't consider for inclusion:
   on a regular basis.
 - Python 2 support.
 
+Code Of Conduct
+---------------
+
+The Exhibition project has adopted the Contributor Covenant Code version 1.4. By
+contributing to this project, you agree to abide by its terms.
+
+The full text of the code of conduct can be found `here
+<https://github.com/moggers87/exhibition/blob/master/CODE_OF_CONDUCT.md>`__
+
+
 .. inclusion-marker-do-not-remove-end
+
+Funding
+-------
+
+If you have found Exhibition to be useful and would like to see its continued
+development, please consider `buying me a coffee
+<https://ko-fi.com/moggers87>`__.
 
 .. |Build Status| image:: https://travis-ci.org/moggers87/exhibition.svg?branch=master
    :alt: Build Status
