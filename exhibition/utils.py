@@ -1,5 +1,3 @@
-# TODO(JordanLozinski) Update docs to reflect PR
-
 ##
 #
 # Copyright (C) 2018 Matt Molyneaux
