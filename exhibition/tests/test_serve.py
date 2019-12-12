@@ -84,7 +84,7 @@ class ServeTestCase(TestCase):
         with pathlib.Path(self.blog_dir, "index.html").open("w") as index:
             index.write(BLOG_INDEX_CONTENTS)
 
-        self.client = HTTPConnection("localhost", "8001")
+        self.client = HTTPConnection("localhost", "8000")
 
     def tearDown(self):
         self.tmp_dir.cleanup()
@@ -93,7 +93,7 @@ class ServeTestCase(TestCase):
         self.server.server_close()
 
     def get_server(self, settings):
-        httpd, thread = serve(settings, "localhost", 8001)
+        httpd, thread = serve(settings)
         self.server = httpd
 
     def test_fetch_file(self):
