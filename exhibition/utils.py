@@ -1,3 +1,5 @@
+# TODO(JordanLozinski) Update docs to reflect PR
+
 ##
 #
 # Copyright (C) 2018 Matt Molyneaux
@@ -85,7 +87,7 @@ class ExhibitionBaseHTTPRequestHandler(SimpleHTTPRequestHandler):
         return super().end_headers()
 
 
-def serve(settings):
+def serve(settings, server, port):
     """
     Serves the generated site from ``deploy_path``
 
@@ -93,7 +95,7 @@ def serve(settings):
     """
     logger = logging.getLogger("exhibition.server")
 
-    server_address = ('localhost', 8000)
+    server_address = (server, port)
 
     # this is quite ewwww, but whatever.
     class ExhibitionHTTPRequestHandler(ExhibitionBaseHTTPRequestHandler):

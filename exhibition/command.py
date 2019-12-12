@@ -56,12 +56,14 @@ def gen():
 
 
 @exhibition.command(short_help="Serve site locally")
-def serve():
+@exhibition.option("-s", "--server", default="localhost", help="Hostname to serve the site at.")
+@exhibition.option("-p", "--port", default="8000", help="Port to serve the site at.")
+def serve(server, port):
     """
     Serve files from deploy_path as a webserver would
     """
     settings = config.Config.from_path(config.SITE_YAML_PATH)
-    httpd, thread = utils.serve(settings)
+    httpd, thread = utils.serve(settings, server, port)
 
     try:
         thread.join()
