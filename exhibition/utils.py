@@ -85,7 +85,7 @@ class ExhibitionBaseHTTPRequestHandler(SimpleHTTPRequestHandler):
         return super().end_headers()
 
 
-def serve(settings, server="localhost", port=8000):
+def serve(settings, server="localhost", port="8000"):
     """
     Serves the generated site from ``deploy_path``
 
@@ -93,6 +93,7 @@ def serve(settings, server="localhost", port=8000):
     """
     logger = logging.getLogger("exhibition.server")
 
+    port = int(port)
     server_address = (server, port)
 
     # this is quite ewwww, but whatever.
