@@ -65,10 +65,13 @@ class CommandTestCase(TestCase):
         self.assertEqual(serve_mock.return_value[0].shutdown.call_count, 1)
         self.assertEqual(serve_mock.return_value[1].join.call_count, 2)
 
-
+        # Undoing the KeyboardInterrupt
+        serve_mock.return_value[1].join.side_effect = None
         # Now testing w args
         config_mock.reset_mock()
         serve_mock.reset_mock()
+        serve_mock.return_value[0].reset_mock()
+        serve_mock.return_value[1].reset_mock()
         
         result = runner.invoke(command.exhibition, ["serve", "--server", "localhost", "--port", "8001"])
 
