@@ -59,7 +59,7 @@ class CommandTestCase(TestCase):
         result = runner.invoke(command.exhibition, ["serve"])
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(serve_mock.call_count, 2)
-        self.assertEqual(serve_mock.call_args, ((config_mock.return_value,), {}))
+        self.assertEqual(serve_mock.call_args, ((config_mock.return_value, ("localhost", 8000)), {}))
 
         self.assertEqual(config_mock.call_args, ((config.SITE_YAML_PATH,), {}))
         self.assertEqual(serve_mock.return_value[0].shutdown.call_count, 1)
