@@ -48,7 +48,7 @@ class CommandTestCase(TestCase):
 
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(serve_mock.call_count, 1)
-        self.assertEqual(serve_mock.call_args, ((config_mock.return_value,), {}))
+        self.assertEqual(serve_mock.call_args, ((config_mock.return_value, ("localhost", 8000)), {}))
 
         self.assertEqual(config_mock.call_args, ((config.SITE_YAML_PATH,), {}))
         self.assertEqual(serve_mock.return_value[0].shutdown.call_count, 0)
@@ -64,6 +64,20 @@ class CommandTestCase(TestCase):
         self.assertEqual(config_mock.call_args, ((config.SITE_YAML_PATH,), {}))
         self.assertEqual(serve_mock.return_value[0].shutdown.call_count, 1)
         self.assertEqual(serve_mock.return_value[1].join.call_count, 2)
+
+
+        # Now testing w args
+        config_mock.reset_mock()
+        serve_mock.reset_mock()
+        
+        result = runner.invoke(command.exhibition, ["serve", "--server", "localhost", "--port", "8001"])
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(serve_mock.call_count, 1)
+        self.assertEqual(serve_mock.call_args, ((config_mock.return_value, ("localhost", 8001)), {}))
+
+        self.assertEqual(serve_mock.return_value[0].shutdown.call_count, 0)
+        self.assertEqual(serve_mock.return_value[1].join.call_count, 1)
 
     @mock.patch.object(command, "logger")
     def test_exhibition(self, log_mock):
