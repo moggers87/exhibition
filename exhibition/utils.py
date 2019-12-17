@@ -93,9 +93,6 @@ def serve(settings, server_address):
     """
     logger = logging.getLogger("exhibition.server")
 
-    port = int(port)
-    server_address = (server, port)
-
     # this is quite ewwww, but whatever.
     class ExhibitionHTTPRequestHandler(ExhibitionBaseHTTPRequestHandler):
         _settings = settings
