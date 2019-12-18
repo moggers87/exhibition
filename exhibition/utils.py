@@ -85,15 +85,13 @@ class ExhibitionBaseHTTPRequestHandler(SimpleHTTPRequestHandler):
         return super().end_headers()
 
 
-def serve(settings):
+def serve(settings, server_address):
     """
     Serves the generated site from ``deploy_path``
 
     Respects settings like ``base_url`` if present.
     """
     logger = logging.getLogger("exhibition.server")
-
-    server_address = ('localhost', 8000)
 
     # this is quite ewwww, but whatever.
     class ExhibitionHTTPRequestHandler(ExhibitionBaseHTTPRequestHandler):

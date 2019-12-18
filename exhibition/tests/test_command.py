@@ -48,7 +48,8 @@ class CommandTestCase(TestCase):
 
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(serve_mock.call_count, 1)
-        self.assertEqual(serve_mock.call_args, ((config_mock.return_value,), {}))
+        expected_args = ((config_mock.return_value, ("localhost", 8000)), {})
+        self.assertEqual(serve_mock.call_args, expected_args)
 
         self.assertEqual(config_mock.call_args, ((config.SITE_YAML_PATH,), {}))
         self.assertEqual(serve_mock.return_value[0].shutdown.call_count, 0)
@@ -59,11 +60,30 @@ class CommandTestCase(TestCase):
         result = runner.invoke(command.exhibition, ["serve"])
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(serve_mock.call_count, 2)
-        self.assertEqual(serve_mock.call_args, ((config_mock.return_value,), {}))
+        expected_args = ((config_mock.return_value, ("localhost", 8000)), {})
+        self.assertEqual(serve_mock.call_args, expected_args)
 
         self.assertEqual(config_mock.call_args, ((config.SITE_YAML_PATH,), {}))
         self.assertEqual(serve_mock.return_value[0].shutdown.call_count, 1)
         self.assertEqual(serve_mock.return_value[1].join.call_count, 2)
+
+        # Undoing the KeyboardInterrupt
+        serve_mock.return_value[1].join.side_effect = None
+        # Now testing w args
+        config_mock.reset_mock()
+        serve_mock.reset_mock()
+        serve_mock.return_value[0].reset_mock()
+        serve_mock.return_value[1].reset_mock()
+        addr_options = ["serve", "--server", "localhost", "--port", "8001"]
+        result = runner.invoke(command.exhibition, addr_options)
+
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(serve_mock.call_count, 1)
+        expected_args = ((config_mock.return_value, ("localhost", 8001)), {})
+        self.assertEqual(serve_mock.call_args, expected_args)
+
+        self.assertEqual(serve_mock.return_value[0].shutdown.call_count, 0)
+        self.assertEqual(serve_mock.return_value[1].join.call_count, 1)
 
     @mock.patch.object(command, "logger")
     def test_exhibition(self, log_mock):

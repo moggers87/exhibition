@@ -93,7 +93,8 @@ class ServeTestCase(TestCase):
         self.server.server_close()
 
     def get_server(self, settings):
-        httpd, thread = serve(settings)
+        server_address = ("localhost", 8000)
+        httpd, thread = serve(settings, server_address)
         self.server = httpd
 
     def test_fetch_file(self):
