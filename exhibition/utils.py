@@ -30,13 +30,15 @@ from .node import Node
 logger = logging.getLogger("exhibition")
 
 
-def gen(settings):
+def gen(settings, delete=True):
     """
     Generate site
 
     Deletes ``deploy_path`` first.
     """
-    shutil.rmtree(settings["deploy_path"], True)
+    if delete:
+        shutil.rmtree(settings["deploy_path"], True)
+
     root_node = Node.from_path(pathlib.Path(settings["content_path"]), meta=settings)
 
     for item in root_node.walk(True):

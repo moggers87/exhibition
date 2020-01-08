@@ -41,6 +41,18 @@ class GenTestCase(TestCase):
             gen(settings)
             self.assertFalse(os.path.exists(old_file))
 
+    def test_dont_clean_deploy_dir
+        with TemporaryDirectory() as deploy, TemporaryDirectory() as content:
+            settings = Config({"deploy_path": deploy, "content_path": content})
+            old_file = os.path.join(deploy, "someoldfile")
+            with open(old_file, "w") as of:
+                of.write("content!")
+
+            # file should exist after generation
+            self.assertTrue(os.path.exists(old_file))
+            gen(settings, False)
+            self.assertTrue(os.path.exists(old_file))
+
     def test_walk_nodes(self):
         files = [
             "blog/index.html",
