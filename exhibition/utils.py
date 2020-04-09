@@ -47,6 +47,8 @@ def gen(settings):
 class ExhibitionBaseHTTPRequestHandler(SimpleHTTPRequestHandler):
     def _sanitise_path(self, path):
         """ Strip leading and trailing / as well as base_url, if preset """
+        path = path.split('?', 1)[0]
+        path = path.split('#', 1)[0]
         path = path.strip("/")
         if self._settings.get("base_url"):
             base = self._settings["base_url"].strip("/")

@@ -109,6 +109,30 @@ class ServeTestCase(TestCase):
         headers = dict(response.getheaders())
         self.assertEqual(headers["Cache-Control"], "no-store")
 
+    def test_fetch_file_with_get_params(self):
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
+        self.get_server(settings)
+
+        self.client.request("GET", "/style.css?something=1")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 200)
+        content = response.read()
+        self.assertEqual(content, CSS_CONTENTS.encode())
+        headers = dict(response.getheaders())
+        self.assertEqual(headers["Cache-Control"], "no-store")
+
+    def test_fetch_file_with_fragment(self):
+        settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name})
+        self.get_server(settings)
+
+        self.client.request("GET", "/style.css#something")
+        response = self.client.getresponse()
+        self.assertEqual(response.status, 200)
+        content = response.read()
+        self.assertEqual(content, CSS_CONTENTS.encode())
+        headers = dict(response.getheaders())
+        self.assertEqual(headers["Cache-Control"], "no-store")
+
     def test_fetch_file_with_prefix(self):
         settings = Config({"deploy_path": self.tmp_dir.name, "content_path": self.tmp_dir.name,
                            "base_url": "/bob/"})
