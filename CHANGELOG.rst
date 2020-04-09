@@ -1,3 +1,25 @@
+.. _zero-one-one:
+
+0.1.1
+-----
+
+Added
+~~~~~
+
+- Allow settings of local HTTP server address and port.
+- Added Python 3.8 support.
+
+Removed
+~~~~~~~
+
+*Nothing was removed in this release*
+
+Fixed
+~~~~~
+
+- Set ``Cache-Control`` to ``no-store`` on HTTP server respones
+- HTTP server should ignore ``GET`` params and fragments
+
 .. _zero-one-zero:
 
 0.1.0
