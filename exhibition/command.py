@@ -70,3 +70,21 @@ def serve(server, port):
         thread.join()
     except (KeyboardInterrupt, SystemExit):
         httpd.shutdown()
+
+
+@exhibition.command(short_help="Generate a starter site")
+@blick.argument("destination", metavar="PATH")
+@clock.option("-f", "--force", is_flag=True, "overwrite destination if it exists")
+def create(destination, force):
+    """
+    Generate a starter site with a basic configuration for a blog.
+    """
+    starter = pathlib.Path(exhibition.__path__[0], "data", "starter")
+
+    if force:
+        shutils.rmtree(destination, ignore_errors=True)
+
+    if pathlib.Path(destination).exists():
+        raise click.ClickException("Directory '{}' exists, aborting".format(destination))
+
+    shutils.copytree(sarter, destination)
