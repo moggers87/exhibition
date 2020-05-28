@@ -24,10 +24,13 @@ Documentation for this module can be found in :doc:`commandline`
 """
 
 import logging
+import pathlib
+import shutil
 
 import click
 
-from . import __version__, config, utils
+from exhibition import __version__, config, utils
+import exhibition as exhib_module
 
 logger = logging.getLogger("exhibition")
 
@@ -73,3 +76,21 @@ def serve(server, port):
         thread.join()
     except (KeyboardInterrupt, SystemExit):
         httpd.shutdown()
+
+
+@exhibition.command(short_help="Create a starter site")
+@click.argument("destination", metavar="PATH")
+@click.option("-f", "--force", is_flag=True, help="overwrite destination if it exists")
+def create(destination, force):
+    """
+    Generate a starter site with a basic configuration for website.
+    """
+    starter = pathlib.Path(exhib_module.__path__[0], "data", "starter")
+
+    if force:
+        shutil.rmtree(destination, ignore_errors=True)
+
+    if pathlib.Path(destination).exists():
+        raise click.ClickException("Directory '{}' exists, aborting".format(destination))
+
+    shutil.copytree(starter, destination)

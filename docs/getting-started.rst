@@ -20,6 +20,10 @@ For example:
    > content_path: content
    > EOF
 
+.. note::
+
+   Exhibition comes with a starter template for new sites. See ``exhibit create --help`` for more information.
+
 You can now generate your first Exhibition website!:
 
 .. code-block:: shell
