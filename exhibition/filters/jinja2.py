@@ -62,6 +62,7 @@ DEFAULT_PANDOC_KWARGS = {
 
 logger = logging.getLogger("exhibition")
 
+
 def metasort(nodes, key=None, reverse=False):
     """
     Sorts a list of nodes based on keys found in their meta objects
@@ -92,6 +93,7 @@ def markdown(ctx, text):
     kwargs.update(node.meta.get("markdown_config", {}))
 
     return md_func(text, **kwargs)
+
 
 @contextfilter
 def pandoc(ctx, text, fmt=None):
