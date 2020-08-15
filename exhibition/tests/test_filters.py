@@ -255,11 +255,7 @@ class Jinja2TestCase(TestCase):
     def test_pandoc_filter(self):
         node = Node(mock.Mock(), None, meta={"templates": []})
         node.is_leaf = False
-        try:
-            result = jinja_filter(node, PANDOC_TEMPLATE)
-        except OSError:
-            # Pandoc isn't installed.
-            pass
+        result = jinja_filter(node, PANDOC_TEMPLATE)
         self.assertEqual(
             result,
             "\n<h1 id=\"hello\">Hello</h1>\n"
