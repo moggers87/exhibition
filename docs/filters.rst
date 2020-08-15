@@ -51,7 +51,7 @@ as keyword arguments.
 
 Please refer `pypandoc project <https://github.com/bebraw/pypandoc>`_ for details.
 
-Note, pypandoc requires pandoc to be installed. It will display a warning without it.
+Note, pypandoc requires pandoc to be installed. It will error without it.
 
 Typogrify
 ^^^^^^^^^
