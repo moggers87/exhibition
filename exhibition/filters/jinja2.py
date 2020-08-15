@@ -29,6 +29,7 @@ To use, add the following to your configuration file:
    filter: exhibition.filters.jinja2
 """
 
+import logging
 from datetime import datetime, timezone
 
 from jinja2 import Environment, FileSystemLoader, contextfilter
@@ -37,6 +38,8 @@ from jinja2.ext import Extension
 from jinja2.nodes import CallBlock, Const, ContextReference
 from markdown import markdown as md_func
 from typogrify.templatetags import jinja_filters as typogrify_filters
+from pypandoc import convert_text as pandoc_func
+
 
 EXTENDS_TEMPLATE_TEMPLATE = """{%% extends "%s" %%}
 """
@@ -53,6 +56,11 @@ DEFAULT_MD_KWARGS = {
     "output_format": "html5",
 }
 
+DEFAULT_PANDOC_KWARGS = {
+    "to": "html",
+}
+
+logger = logging.getLogger("exhibition")
 
 def metasort(nodes, key=None, reverse=False):
     """
@@ -84,6 +92,23 @@ def markdown(ctx, text):
     kwargs.update(node.meta.get("markdown_config", {}))
 
     return md_func(text, **kwargs)
+
+@contextfilter
+def pandoc(ctx, text, fmt=None):
+    kwargs = DEFAULT_PANDOC_KWARGS.copy()
+    node = ctx[NODE_TMPL_VAR]
+
+    kwargs.update(node.meta.get("pandoc_config", {}))
+
+    if fmt is not None:
+        kwargs["format"] = fmt
+
+    try:
+        return pandoc_func(text, **kwargs)
+    except OSError:
+        # Pandoc isn't installed.
+        logger.warning("Pandoc is not installed.")
+        return ""
 
 
 class RaiseError(Extension):
@@ -157,6 +182,7 @@ def content_filter(node, content):
         extensions=[RaiseError, Mark],
         autoescape=True,
     )
+    env.filters["pandoc"] = pandoc
     env.filters["markdown"] = markdown
     env.filters["metasort"] = metasort
     env.filters["metaselect"] = metaselect
