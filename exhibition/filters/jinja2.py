@@ -30,7 +30,6 @@ To use, add the following to your configuration file:
 """
 
 from datetime import datetime, timezone
-import logging
 
 from jinja2 import Environment, FileSystemLoader, contextfilter
 from jinja2.exceptions import TemplateRuntimeError
@@ -58,8 +57,6 @@ DEFAULT_MD_KWARGS = {
 DEFAULT_PANDOC_KWARGS = {
     "to": "html",
 }
-
-logger = logging.getLogger("exhibition")
 
 
 def metasort(nodes, key=None, reverse=False):
@@ -104,12 +101,7 @@ def pandoc(ctx, text, fmt=None):
     if fmt is not None:
         kwargs["format"] = fmt
 
-    try:
-        return pandoc_func(text, **kwargs)
-    except OSError:
-        # Pandoc isn't installed.
-        logger.warning("Pandoc is not installed.")
-        return ""
+    return pandoc_func(text, **kwargs)
 
 
 class RaiseError(Extension):
