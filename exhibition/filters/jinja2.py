@@ -29,17 +29,16 @@ To use, add the following to your configuration file:
    filter: exhibition.filters.jinja2
 """
 
-import logging
 from datetime import datetime, timezone
+import logging
 
 from jinja2 import Environment, FileSystemLoader, contextfilter
 from jinja2.exceptions import TemplateRuntimeError
 from jinja2.ext import Extension
 from jinja2.nodes import CallBlock, Const, ContextReference
 from markdown import markdown as md_func
-from typogrify.templatetags import jinja_filters as typogrify_filters
 from pypandoc import convert_text as pandoc_func
-
+from typogrify.templatetags import jinja_filters as typogrify_filters
 
 EXTENDS_TEMPLATE_TEMPLATE = """{%% extends "%s" %%}
 """
