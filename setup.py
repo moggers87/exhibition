@@ -39,6 +39,7 @@ setup(
         "markdown",
         "ruamel.yaml",
         "typogrify",
+        "pypandoc",
     ],
     extras_require={
         "docs": [

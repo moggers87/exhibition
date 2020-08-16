@@ -68,6 +68,23 @@ This is *text*
 {% endfilter %}
 """.strip()
 
+
+PANDOC_TEMPLATE = """
+{% filter pandoc("org") %}
+* Hello
+
+This /is/ *text*
+{% endfilter %}
+"""
+
+PANDOC_TEMPLATE_WITHOUT_ARG = """
+{% filter pandoc %}
+* Hello
+
+This /is/ *text*
+{% endfilter %}
+"""
+
 TYPOG_TEMPLATE = """
 {% filter typogrify %}
 Hello -- how are you?
@@ -242,6 +259,33 @@ class Jinja2TestCase(TestCase):
         node.is_leaf = False
         result = jinja_filter(node, MD_TEMPLATE)
         self.assertEqual(result, "<h2>Hello</h2>\n<p>This is <em>text</em></p>")
+
+    def test_pandoc_filter(self):
+        node = Node(mock.Mock(), None, meta={"templates": []})
+        node.is_leaf = False
+        result = jinja_filter(node, PANDOC_TEMPLATE)
+        self.assertEqual(
+            result,
+            "\n<h1 id=\"hello\">Hello</h1>\n"
+            "<p>This <em>is</em> <strong>text</strong></p>\n"
+        )
+
+    def test_pandoc_filter_no_argument(self):
+        meta = {"templates": []}
+        node = Node(mock.Mock(), None, meta=meta)
+        node.is_leaf = False
+
+        # First test with no arguments at all.
+        self.assertRaises(
+            TypeError,
+            jinja_filter,
+            node,
+            PANDOC_TEMPLATE_WITHOUT_ARG
+        )
+
+        node.meta["pandoc_config"] = {"format": "org", "to": "markdown"}
+        result = jinja_filter(node, PANDOC_TEMPLATE_WITHOUT_ARG)
+        self.assertEqual(result, "\nHello\n=====\n\nThis *is* **text**\n")
 
     def test_typogrify_filter(self):
         node = Node(mock.Mock(), None, meta={"templates": []})

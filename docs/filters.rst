@@ -42,6 +42,17 @@ keyword arguments.
 
 Please view the `Markdown documentation <https://python-markdown.github.io/>`_ for details.
 
+Pandoc
+^^^^^^
+
+``pandoc`` is provided as a filter and can be configured by the
+``pandoc_config`` meta variable, which is passed to the convert_text function
+as keyword arguments.
+
+Please refer `pypandoc project <https://github.com/bebraw/pypandoc>`_ for details.
+
+Note, pypandoc requires pandoc to be installed. It will error without it.
+
 Typogrify
 ^^^^^^^^^
 

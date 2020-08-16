@@ -36,6 +36,7 @@ from jinja2.exceptions import TemplateRuntimeError
 from jinja2.ext import Extension
 from jinja2.nodes import CallBlock, Const, ContextReference
 from markdown import markdown as md_func
+from pypandoc import convert_text as pandoc_func
 from typogrify.templatetags import jinja_filters as typogrify_filters
 
 EXTENDS_TEMPLATE_TEMPLATE = """{%% extends "%s" %%}
@@ -51,6 +52,10 @@ NODE_TMPL_VAR = "node"
 
 DEFAULT_MD_KWARGS = {
     "output_format": "html5",
+}
+
+DEFAULT_PANDOC_KWARGS = {
+    "to": "html",
 }
 
 
@@ -84,6 +89,19 @@ def markdown(ctx, text):
     kwargs.update(node.meta.get("markdown_config", {}))
 
     return md_func(text, **kwargs)
+
+
+@contextfilter
+def pandoc(ctx, text, fmt=None):
+    kwargs = DEFAULT_PANDOC_KWARGS.copy()
+    node = ctx[NODE_TMPL_VAR]
+
+    kwargs.update(node.meta.get("pandoc_config", {}))
+
+    if fmt is not None:
+        kwargs["format"] = fmt
+
+    return pandoc_func(text, **kwargs)
 
 
 class RaiseError(Extension):
@@ -157,6 +175,7 @@ def content_filter(node, content):
         extensions=[RaiseError, Mark],
         autoescape=True,
     )
+    env.filters["pandoc"] = pandoc
     env.filters["markdown"] = markdown
     env.filters["metasort"] = metasort
     env.filters["metaselect"] = metaselect

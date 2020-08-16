@@ -19,6 +19,10 @@ matrix:
       install: pip install tox
       script: tox -e $TOX_ENV
 
+before_install:
+    - sudo apt update
+    - sudo apt -y install pandoc
+
 install:
     - pip install tox-travis codecov
 
