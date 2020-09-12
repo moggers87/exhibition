@@ -37,6 +37,9 @@ logger = logging.getLogger("exhibition")
 @click.option("-v", "--verbose", count=True,
               help="Verbose output, can be used multiple times to increase logging level")
 def exhibition(verbose):
+    """
+    A Python static site generator
+    """
     logger.addHandler(logging.StreamHandler())
     if verbose > 1:
         logger.setLevel(logging.DEBUG)
