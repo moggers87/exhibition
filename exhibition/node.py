@@ -20,6 +20,7 @@
 ##
 
 from collections import OrderedDict
+from functools import cached_property
 from importlib import import_module
 import hashlib
 import pathlib
@@ -51,12 +52,6 @@ class Node:
     _dir_mode = 0o755
     _file_mode = 0o644
 
-    _cache_bust_version = None
-    _content = None
-    _content_start = None
-    _data = None
-    _marks = None
-
     def __init__(self, path, parent, meta=None):
         """
         :param path:
@@ -74,9 +69,14 @@ class Node:
 
         self.is_leaf = self.path_obj.is_file()
 
-        self._meta = Config({}, parent=getattr(self.parent, "meta", None), node=self.parent)
+        try:
+            parent_meta = self.parent.meta
+        except AttributeError:
+            parent_meta = None
+
+        self.__meta = Config({}, parent=parent_meta, node=self.parent)
         if meta:
-            self._meta.update(meta)
+            self.__meta.update(meta)
 
         if self.parent:
             self.parent.add_child(self)
@@ -236,83 +236,25 @@ class Node:
         file_obj = pathlib.Path(self.full_path)
         file_obj.touch(self._file_mode)
 
-        content = self.get_content()
+        with file_obj.open("w" if type(self.content) is str else "wb") as fo:
+            fo.write(self.content)
 
-        with file_obj.open("w" if type(content) is str else "wb") as fo:
-            fo.write(content)
-
-    def process_meta(self):
-        """
-        Finds and processes the YAML fonrt matter at the top of a file
-
-        If the file does not start with ``---\\n``, then it's assumed the file
-        does not contain any meta YAML for us to process
-        """
-        if self._content_start is not None:
-            # we've done this already
-            return
-
-        if not self.is_leaf:
-            self._content_start = 0
-            return
-
-        found_header = False
-        with self.path_obj.open("rb") as file_obj:
-            while True:
-                data = file_obj.read(100)
-                try:
-                    data = data.decode("utf-8")
-                except UnicodeDecodeError:
-                    self._content_start = 0
-                    return
-
-                if data == '':
-                    # we've run out of file, either we didn't find a header or
-                    # we're missing a footer
-                    self._content_start = 0
-                    return
-                elif not found_header:
-                    if data.startswith(self._meta_header):
-                        found_header = True
-                        found_meta = data[len(self._meta_header):]
-                    else:
-                        # if our token is not the first thing in the file, then
-                        # it's not for us
-                        self._content_start = 0
-                        return
-                else:
-                    found_meta += data
-
-                if self._meta_footer in found_meta:
-                    idx = found_meta.index(self._meta_footer)
-                    found_meta = found_meta[:idx]
-                    break
-
-        self._meta.load(found_meta)
-        self._content_start = len(self._meta_header) + len(found_meta) + len(self._meta_footer)
-
-    def get_content(self):
+    @cached_property
+    def content(self):
         """
         Get the actual content of the Node
-
-        First calls :meth:`process_meta` to find the end any frontmatter that
-        might be present and then returns the rest of the file
 
         If ``filter`` has been specified in :attr:`meta`, that filter will be
         used to further process the content.
         """
-        if self._content is not None:
-            return self._content
-
-        self.process_meta()
         content_filter = self.meta.get("filter")
         with self.path_obj.open("rb") as file_obj:
-            file_obj.seek(self._content_start)
-            self._content = file_obj.read()
+            file_obj.seek(self.__content_start)
+            content = file_obj.read()
             try:
-                self._content = self._content.decode("utf-8")
+                content = content.decode("utf-8")
             except UnicodeDecodeError:
-                return self._content
+                return content
 
             if content_filter is not None:
                 filter_module = import_module(content_filter)
@@ -321,39 +263,70 @@ class Node:
                     globs = [globs]
                 for filter_glob in globs:
                     if self.path_obj in self.path_obj.parent.glob(filter_glob):
-                        self._content = filter_module.content_filter(self, self._content)
-                        break
+                        return filter_module.content_filter(self, content)
+        return content
 
-        return self._content
-
-    @property
+    @cached_property
     def meta(self):
         """
         Configuration object
 
-        Automatically loads frontmatter if applicable
+        Finds and processes the YAML front matter at the top of a file
+
+        If the file does not start with ``---\\n``, then it's assumed the file
+        does not contain any meta YAML for us to process
         """
-        self.process_meta()
-        return self._meta
+        self.__content_start = 0
+        if not self.is_leaf:
+            return self.__meta
+
+        found_header = False
+        with self.path_obj.open("rb") as file_obj:
+            while True:
+                data = file_obj.read(100)
+                try:
+                    data = data.decode("utf-8")
+                except UnicodeDecodeError:
+                    return self.__meta
+
+                if data == '':
+                    # we've run out of file, either we didn't find a header or
+                    # we're missing a footer
+                    return self.__meta
+                elif not found_header:
+                    if data.startswith(self._meta_header):
+                        found_header = True
+                        found_meta = data[len(self._meta_header):]
+                    else:
+                        # if our token is not the first thing in the file, then
+                        # it's not for us
+                        return self.__meta
+                else:
+                    found_meta += data
+
+                if self._meta_footer in found_meta:
+                    idx = found_meta.index(self._meta_footer)
+                    found_meta = found_meta[:idx]
+                    break
+
+        self.__meta.load(found_meta)
+        self.__content_start = len(self._meta_header) + len(found_meta) + len(self._meta_footer)
+
+        return self.__meta
 
     @property
     def marks(self):
         """
         Marked sections from content
-
-        Calls :meth:`get_content` to process content if that hasn't been done
-        already
         """
-        if self._marks is not None:
-            return self._marks
-
-        self._marks = {}
-        # make sure that _marks gets populated
-        self.get_content()
+        if not hasattr(self, "_marks"):
+            self._marks = {}
+            # make sure that _marks gets populated
+            self.content
 
         return self._marks
 
-    @property
+    @cached_property
     def data(self):
         """Extracts data from contents of file
 
@@ -362,14 +335,10 @@ class Node:
         if self.path_obj.is_dir():
             return
 
-        if self._data is None:
-            data = self.get_content()
+        func = DATA_EXTRACTORS[self.path_obj.suffix]
+        data = func(self.content)
 
-            func = DATA_EXTRACTORS[self.path_obj.suffix]
-
-            self._data = func(data)
-
-        return self._data
+        return data
 
     def add_child(self, child):
         """
@@ -386,28 +355,25 @@ class Node:
         """Returns all children of the parent Node, except for itself"""
         return {k: v for k, v in self.parent.children.items() if v is not self}
 
-    @property
+    @cached_property
     def cache_bust(self):
-        if self._cache_bust_version is not None:
-            return self._cache_bust_version
-
-        self._cache_bust_version = False
+        cache_bust_version = None
         globs = self.meta.get("cache_bust_glob", [])
         if not isinstance(globs, (list, tuple)):
             globs = [globs]
         for cache_bust_glob in globs:
             if self.path_obj in self.path_obj.parent.glob(cache_bust_glob):
                 hasher = hashlib.md5()
-                content = self.get_content()
+                content = self.content
                 if isinstance(content, str):
                     # content needs to be bytes just for this bit
                     content = content.encode("utf-8")
                 hasher.update(content)
 
-                self._cache_bust_version = hasher.hexdigest()[:8]
+                cache_bust_version = hasher.hexdigest()[:8]
                 break
 
-        return self._cache_bust_version
+        return cache_bust_version
 
     @property
     def strip_exts(self):

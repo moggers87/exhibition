@@ -114,7 +114,7 @@ class ExternalCommandTestCase(TestCase):
     def test_input_output(self):
         content = "hello, how are you?"
         node = Node(mock.Mock(), None, meta={"external_cmd": "cat {INPUT} | base64 > {OUTPUT}"})
-        node._content_start = 0
+        node.meta = node._Node__meta
         output = external_filter(node, content)
 
         expected_output = base64.b64encode(content.encode()).decode() + "\n"
@@ -295,30 +295,30 @@ class Jinja2TestCase(TestCase):
 
     def test_metasort(self):
         node = Node(mock.Mock(), None, meta={"templates": []})
-        node._content_start = 0
+        node.meta = node._Node__meta
         for i in [3, 5, 27, 2, 1]:
             new_node = Node(mock.Mock(), node, meta={"bob": i})
-            new_node._content_start = 0
+            new_node.meta = new_node._Node__meta
         result = jinja_filter(node, METASORT_TEMPLATE)
 
         self.assertEqual(result, "123527")
 
     def test_metaselect(self):
         node = Node(mock.Mock(),  None, meta={"templates": []})
-        node._content_start = 0
+        node.meta = node._Node__meta
         for i in [True, True, False, True, None]:
             new_node = Node(mock.Mock(), node, meta={"bob": i})
-            new_node._content_start = 0
+            new_node.meta = new_node._Node__meta
         result = jinja_filter(node, METASELECT_TEMPLATE)
 
         self.assertEqual(result, "TrueTrueTrue")
 
     def test_metareject(self):
         node = Node(mock.Mock(),  None, meta={"templates": []})
-        node._content_start = 0
+        node.meta = node._Node__meta
         for i in [True, True, False, True, None]:
             new_node = Node(mock.Mock(), node, meta={"bob": i})
-            new_node._content_start = 0
+            new_node.meta = new_node._Node__meta
         result = jinja_filter(node, METAREJECT_TEMPLATE)
 
         # dict key order isn't stable, but it'll be one of these

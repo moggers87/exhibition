@@ -236,11 +236,8 @@ class NodeTestCase(TestCase):
             f.write(GOOD_META)
 
         node = Node(path, None)
-        self.assertEqual(list(node._meta.keys()), [])
-        self.assertEqual(node._content_start, None)
-
         self.assertEqual(list(node.meta.keys()), ["thingy"])
-        self.assertEqual(node._content_start, 18)
+        self.assertEqual(node.content, GOOD_META[18:])
 
     def test_process_long_meta(self):
         path = pathlib.Path(self.content_path.name, "blog")
@@ -248,11 +245,8 @@ class NodeTestCase(TestCase):
             f.write(LONG_META)
 
         node = Node(path, None)
-        self.assertEqual(list(node._meta.keys()), [])
-        self.assertEqual(node._content_start, None)
-
         self.assertCountEqual(list(node.meta.keys()), ["thing%s" % i for i in range(100)])
-        self.assertEqual(node._content_start, 1098)
+        self.assertEqual(node.content, LONG_META[1098:])
 
     def test_process_bad_start_meta(self):
         path = pathlib.Path(self.content_path.name, "blog")
@@ -260,11 +254,8 @@ class NodeTestCase(TestCase):
             f.write(BAD_START_META)
 
         node = Node(path, None)
-        self.assertEqual(list(node._meta.keys()), [])
-        self.assertEqual(node._content_start, None)
-
         self.assertEqual(list(node.meta.keys()), [])
-        self.assertEqual(node._content_start, 0)
+        self.assertEqual(node.content, BAD_START_META)
 
     def test_process_bad_end__meta(self):
         path = pathlib.Path(self.content_path.name, "blog")
@@ -272,11 +263,8 @@ class NodeTestCase(TestCase):
             f.write(BAD_END_META)
 
         node = Node(path, None)
-        self.assertEqual(list(node._meta.keys()), [])
-        self.assertEqual(node._content_start, None)
-
         self.assertEqual(list(node.meta.keys()), [])
-        self.assertEqual(node._content_start, 0)
+        self.assertEqual(node.content, BAD_END_META)
 
     def test_process_no_meta(self):
         path = pathlib.Path(self.content_path.name, "blog")
@@ -284,11 +272,8 @@ class NodeTestCase(TestCase):
             f.write(NO_META)
 
         node = Node(path, None)
-        self.assertEqual(list(node._meta.keys()), [])
-        self.assertEqual(node._content_start, None)
-
         self.assertEqual(list(node.meta.keys()), [])
-        self.assertEqual(node._content_start, 0)
+        self.assertEqual(node.content, NO_META)
 
     def test_get_content(self):
         path = pathlib.Path(self.content_path.name, "blog")
@@ -296,14 +281,7 @@ class NodeTestCase(TestCase):
             f.write("a" * 10)
 
         node = Node(path, None)
-        self.assertEqual(node.get_content(), "a" * 10)
-        self.assertEqual(node._content_start, 0)
-
-        node._content = None
-        node._content_start = 5
-        node.get_content()
-        self.assertEqual(node.get_content(), "a" * 5)
-        self.assertEqual(node._content_start, 5)
+        self.assertEqual(node.content, "a" * 10)
 
     def test_yaml_data(self):
         path = pathlib.Path(self.content_path.name, "blog.yaml")
