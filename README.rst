@@ -71,15 +71,6 @@ feature requests, new features, or documentation. Also, feel free to open issues
 for support requests too - these are very helpful in showing me where
 documentation is required or needs improving.
 
-There are however some items I won't consider for inclusion:
-
-- Functionality to upload the static site once generated. This is and shall
-  remain out of scope for this project.
-- Windows support. I've tried maintaining packages before that have Windows
-  support. I usually end up breaking it as I have no way to test out my changes
-  on a regular basis.
-- Python 2 support.
-
 Code Of Conduct
 ---------------
 
