@@ -271,6 +271,10 @@ class Jinja2TestCase(TestCase):
         )
 
     def test_pandoc_filter_no_argument(self):
+        possible_markdown_outputs = [
+            "\nHello\n=====\n\nThis *is* **text**\n",
+            "\n# Hello\n\nThis *is* **text**\n",
+        ]
         meta = {"templates": []}
         node = Node(mock.Mock(), None, meta=meta)
         node.is_leaf = False
@@ -285,7 +289,7 @@ class Jinja2TestCase(TestCase):
 
         node.meta["pandoc_config"] = {"format": "org", "to": "markdown"}
         result = jinja_filter(node, PANDOC_TEMPLATE_WITHOUT_ARG)
-        self.assertEqual(result, "\nHello\n=====\n\nThis *is* **text**\n")
+        self.assertIn(result, possible_markdown_outputs)
 
     def test_typogrify_filter(self):
         node = Node(mock.Mock(), None, meta={"templates": []})
