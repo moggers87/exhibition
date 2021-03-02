@@ -99,10 +99,10 @@ If you have found Exhibition to be useful and would like to see its continued
 development, please consider `buying me a coffee
 <https://ko-fi.com/moggers87>`__.
 
-.. |Build Status| image:: https://travis-ci.org/moggers87/exhibition.svg?branch=master
+.. |Build Status| image:: (https://github.com/moggers87/exhibition/actions/workflows/tests.yml/badge.svg
    :alt: Build Status
    :scale: 100%
-   :target: https://travis-ci.org/moggers87/exhibition
+   :target: https://github.com/moggers87/exhibition/actions/workflows/tests.yml
 .. |Coverage| image:: https://codecov.io/github/moggers87/exhibition/coverage.svg?branch=master
    :target: https://codecov.io/github/moggers87/exhibition
    :alt: Coverage Status
