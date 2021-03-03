@@ -25,6 +25,8 @@ import pathlib
 import shutil
 import threading
 
+import watchdog
+
 from .node import Node
 
 logger = logging.getLogger("exhibition")
@@ -42,6 +44,21 @@ def gen(settings):
     for item in root_node.walk(True):
         logger.info("Rendering %s", item.full_url)
         item.render()
+
+
+class FileSystemChangeHandler(watchdog.events.FileSystemEventHandler):
+    """ Handler for changes on the file system """
+    settings = None
+
+    def __init__(self, settings, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.settings = settings
+
+    def on_any_event(self, event):
+        """ An event has happened, re-generate the site """
+        super().on_any_event(event)
+        print("Regenerating website")
+        gen(self.settings)
 
 
 class ExhibitionBaseHTTPRequestHandler(SimpleHTTPRequestHandler):

@@ -26,6 +26,7 @@ Documentation for this module can be found in :doc:`commandline`
 import logging
 
 import click
+from watchdog.observers import Observer
 
 from . import __version__, config, utils
 
@@ -61,7 +62,8 @@ def gen():
 @exhibition.command(short_help="Serve site locally")
 @click.option("-s", "--server", default="localhost", help="Hostname to serve the site at.")
 @click.option("-p", "--port", default=8000, type=int, help="Port to serve the site at.")
-def serve(server, port):
+@click.option("--watch/--no-watch", default=True, help="Enables/Disables watching for changes.")
+def serve(server, port, watch):
     """
     Serve files from deploy_path as a webserver would
     """
@@ -69,7 +71,17 @@ def serve(server, port):
     server_address = (server, port)
     httpd, thread = utils.serve(settings, server_address)
 
+    print("Watch status: %s" % watch)
+    if watch:
+        utils.gen(settings)
+        observer = Observer()
+        handler = utils.FileSystemChangeHandler(settings)
+        observer.schedule(handler, settings["content_path"], recursive=True)
+        observer.schedule(handler, settings["templates"], recursive=True)
+        observer.start()
+
     try:
         thread.join()
     except (KeyboardInterrupt, SystemExit):
         httpd.shutdown()
+        observer.join()

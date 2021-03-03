@@ -39,6 +39,7 @@ setup(
         "ruamel.yaml",
         "typogrify",
         "pypandoc",
+        "watchdog",
     ],
     extras_require={
         "docs": [
