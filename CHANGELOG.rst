@@ -1,3 +1,24 @@
+.. _zero-two-zero
+
+0.2.0
+-----
+
+Added
+~~~~~
+
+- Add support for a pandoc filter for Jinja2 templates
+
+Removed
+~~~~~~~
+
+- Remove support for Python 3.5, 3.6, and 3.7
+
+Fixed
+~~~~~
+
+- Add description to ``exhibit`` command
+- Use ``cached_property`` to make code cleaner
+
 .. _zero-one-one:
 
 0.1.1
