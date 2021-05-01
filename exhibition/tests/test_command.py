@@ -19,12 +19,16 @@
 #
 ##
 
+from filecmp import dircmp
+from tempfile import TemporaryDirectory
 from unittest import TestCase, mock
 import logging
+import pathlib
 
 from click.testing import CliRunner
 
 from exhibition import command, config
+import exhibition
 
 
 class CommandTestCase(TestCase):
@@ -120,3 +124,55 @@ class CommandTestCase(TestCase):
         self.assertEqual(log_mock.addHandler.call_count, 2)
         self.assertEqual(log_mock.setLevel.call_count, 2)
         self.assertEqual(log_mock.setLevel.call_args, ((logging.DEBUG,), {}))
+
+
+class CreateTestCase(TestCase):
+    def _dir_cmp(self, pathA, pathB):
+        dir_diff = dircmp(pathA, pathB)
+        return dir_diff.left_only + dir_diff.right_only + dir_diff.funny_files + dir_diff.diff_files
+
+    def test_create(self):
+        with TemporaryDirectory() as tmpDir:
+            path = pathlib.Path(tmpDir, "site")
+            runner = CliRunner()
+            result = runner.invoke(command.exhibition, ["create", str(path)])
+            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(path.exists(), True)
+            self.assertEqual(
+                self._dir_cmp(path, pathlib.Path(exhibition.__path__[0], "data", "starter")),
+                [],
+            )
+
+    def test_existing_dir(self):
+        with TemporaryDirectory() as tmpDir:
+            path = pathlib.Path(tmpDir, "site")
+            path.mkdir()
+            runner = CliRunner()
+            result = runner.invoke(command.exhibition, ["create", str(path)])
+            self.assertEqual(result.exit_code, 1)
+            self.assertEqual(path.exists(), True)
+
+    def test_force_with_existing_dir(self):
+        with TemporaryDirectory() as tmpDir:
+            path = pathlib.Path(tmpDir, "site")
+            path.mkdir()
+            runner = CliRunner()
+            result = runner.invoke(command.exhibition, ["create", "--force", str(path)])
+            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(path.exists(), True)
+            self.assertEqual(
+                self._dir_cmp(path, pathlib.Path(exhibition.__path__[0], "data", "starter")),
+                [],
+            )
+
+    def test_force_without_existing_dir(self):
+        with TemporaryDirectory() as tmpDir:
+            path = pathlib.Path(tmpDir, "site")
+            runner = CliRunner()
+            result = runner.invoke(command.exhibition, ["create", "--force", str(path)])
+            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(path.exists(), True)
+            self.assertEqual(
+                self._dir_cmp(path, pathlib.Path(exhibition.__path__[0], "data", "starter")),
+                [],
+            )

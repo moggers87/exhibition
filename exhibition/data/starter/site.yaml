@@ -1,0 +1,5 @@
+title: My Example Website
+filter: exhibition.filters.jinja2
+deploy_path: deploy
+content_path: content
+templates: templates
