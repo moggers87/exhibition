@@ -1,4 +1,12 @@
-.. _zero-two-zero
+.. _zero-two-one:
+
+0.2.1
+~~~~~
+
+This release is just for a fix some bad syntax in our documentation. Nothing
+else has changed!
+
+.. _zero-two-zero:
 
 0.2.0
 -----
