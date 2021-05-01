@@ -33,24 +33,16 @@ GPLv3 or later. See LICENSE for the actual text.
 Why though?
 -----------
 
-I've been using Hyde since forever, but I wasn't happy with it. I was also very
-unhappy with other static site generators (SSGs) that used Jinja2 for their
-templating needs:
+I'd been using `Hyde`_ for a number of years, eventually that project stopped
+receiving updates. Hyde had very limited test coverage, many features that I
+didn't personally use, and no Python 3 support.  This combination made the
+prospect of maintaining Hyde daunting, so forking was out of the question.
 
-- Pelican and the like are too blog focused. It didn't feel in the spirit of
-  those projects to have anything other than a blog and a few plain pages. I
-  wanted something more freeoform to work with various projects.
-- Hyde is everything I want, except for the complete lack of documentation and
-  a massive code base that needs a lot of work to make it run on Python 3. It
-  is also currently unmaintained.
+.. _`Hyde`: https://github.com/hyde/hyde
 
-  - I should also mention that there are huge parts of Hyde that do not use, so
-    starting from scratch made more sense than upgrading what would be (to me)
-    legacy code.
-
-There are SSGs that aren't written in Python or don't use Jinja2 for their
-templates, but I'm not interested in rewriting all the templates for the sites
-that I have made with Hyde.
+In the end, I wrote Exhibition as other available static site generators would
+either require massively rewriting the sites I already had or weren't flexible
+enough to generate the same URL structure.
 
 What's the status of this project?
 ----------------------------------
@@ -70,15 +62,6 @@ I'm always looking for contributions, whether they be bug reports, bug fixes,
 feature requests, new features, or documentation. Also, feel free to open issues
 for support requests too - these are very helpful in showing me where
 documentation is required or needs improving.
-
-There are however some items I won't consider for inclusion:
-
-- Functionality to upload the static site once generated. This is and shall
-  remain out of scope for this project.
-- Windows support. I've tried maintaining packages before that have Windows
-  support. I usually end up breaking it as I have no way to test out my changes
-  on a regular basis.
-- Python 2 support.
 
 Code Of Conduct
 ---------------
