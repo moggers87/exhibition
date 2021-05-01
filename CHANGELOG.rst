@@ -15,6 +15,7 @@ Added
 ~~~~~
 
 - Add support for a pandoc filter for Jinja2 templates
+- ``exhibit create`` command to get users started
 
 Removed
 ~~~~~~~
