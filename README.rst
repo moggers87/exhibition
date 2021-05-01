@@ -87,7 +87,7 @@ The Exhibition project has adopted the Contributor Covenant Code version 1.4. By
 contributing to this project, you agree to abide by its terms.
 
 The full text of the code of conduct can be found `here
-<https://github.com/moggers87/exhibition/blob/master/CODE_OF_CONDUCT.md>`__
+<https://github.com/moggers87/exhibition/blob/main/CODE_OF_CONDUCT.md>`__
 
 
 .. inclusion-marker-do-not-remove-end
@@ -103,7 +103,7 @@ development, please consider `buying me a coffee
    :alt: Build Status
    :scale: 100%
    :target: https://github.com/moggers87/exhibition/actions/workflows/tests.yml
-.. |Coverage| image:: https://codecov.io/github/moggers87/exhibition/coverage.svg?branch=master
+.. |Coverage| image:: https://codecov.io/github/moggers87/exhibition/coverage.svg?branch=main
    :target: https://codecov.io/github/moggers87/exhibition
    :alt: Coverage Status
    :scale: 100%
