@@ -48,6 +48,7 @@ needs to be enabled:
    deploy_path: deploy
    content_path: content
    filter: exhibition.filters.jinja2
+   templates: templates
 
 Now we can create HTML files that use Jinja2 template syntax:
 
@@ -71,16 +72,11 @@ Run ``exhibit gen`` and then ``exhibit serve``. If you connect to
 
 If you add another page, this number will increase when run ``exhibit gen`` again.
 
-If you wish to use template inheritance, add the following to ``site.yaml``:
-
-.. code-block:: yaml
-
-   templates: mytemplates
-
-Where "mytemplates" is whatever directory you will store your templates in. You
-can either use the extends tag directly or you can specify ``extends`` in
-``site.yaml``. You can also specify ``default_block`` to save you from wrapping
-every page in ``{% block content %}``:
+If you wish to use template inheritance, create a directory named "templates"
+and add your templates to it. You can either use the extends tag directly or
+you can specify ``extends`` in ``site.yaml``. You can also specify
+``default_block`` to save you from wrapping every page in
+``{% block content %}``:
 
 .. code-block:: yaml
 
@@ -90,7 +86,7 @@ every page in ``{% block content %}``:
 And then our template:
 
 .. code-block:: html+jinja
-   :caption: mytemplates/page.j2
+   :caption: templates/page.j2
 
    <html>
      <body>
