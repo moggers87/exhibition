@@ -3,6 +3,9 @@ Filters
 
 Exhibition comes with a number of filters. You can also write your own!
 
+Filters are set by adding the dotted path to their module to the ``filter`` key
+in your configuration. See :doc:`meta` for more inforatmion.
+
 Jinja2
 ------
 
@@ -135,11 +138,39 @@ template is quite complex!
         {% raise "This shouldn't be true! The Universe is broken!" %}
     {% endif %}
 
+Add Your Own Template Filters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An example:
+
+.. code-block:: python
+
+    from exhibition.filters.jinja2 import JinjaFilter
+
+    def emoji(input_string):
+        return input_string + "🖼️"
+
+    content_filter = JinjaFilter({"emoji": emoji})
+
+This file should be a module that Exhibition can import and must be set in the
+configuration for any pages you want to use it.
+
+Extending Jinja2 Filter Further
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Extending the Jinja2 filter is much the same as adding your own template
+filters. Simply subclass :class:`exhibition.filters.jinja2.JinjaFilter`,
+override whatever methods you want and instanisate the class to
+`content_filter` on your module. Then add your filter to your configuration in
+place of the default  Jinja2 filter.
+
+
 External Command
 ----------------
 
 The external command filter only has one option: ``external_cmd``, which is the
-shell command to be run. The specified command should use ``{INPUT}`` as the input file and ``{OUTPUT}`` as the output file, for example:
+shell command to be run. The specified command should use ``{INPUT}`` as the
+input file and ``{OUTPUT}`` as the output file, for example:
 
 .. code-block:: yaml
 
@@ -150,7 +181,8 @@ Unless it is set, ``filter_glob`` will default to ``*.*`` for this filter.
 Make Your Own
 -------------
 
-To create your own filter for Exhibition, your module must implement a function with the following signature:
+To create your own filter for Exhibition, your module must implement a function
+with the following signature:
 
 .. code-block:: python
 
@@ -161,4 +193,11 @@ To create your own filter for Exhibition, your module must implement a function 
 
 :content: is the content of that node, with any frontmatter removed.
 
-``content_filter`` should return a string, which will then become the rendered form of this node.
+``content_filter`` should return a string, which will then become the rendered
+form of this node.
+
+As we saw in `Extending Jinja2 Filter Further`_, a filter can also be written
+as a class. You can write a filter in any way you like as long as you end up
+with a module that has a callable named ``content_filter``. You can take a look
+at :class:`exhibition.filters.base.BaseFilter` for an example of a class based
+filter.
