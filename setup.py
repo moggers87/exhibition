@@ -34,7 +34,7 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "click",
-        "jinja2 < 3",
+        "jinja2",
         "markdown",
         "ruamel.yaml",
         "typogrify",
