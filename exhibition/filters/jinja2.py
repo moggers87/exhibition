@@ -39,6 +39,8 @@ from markdown import markdown as md_func
 from pypandoc import convert_text as pandoc_func
 from typogrify.templatetags import jinja_filters as typogrify_filters
 
+from exhibition.filters.base import BaseFilter
+
 EXTENDS_TEMPLATE_TEMPLATE = """{%% extends "%s" %%}
 """
 START_BLOCK_TEMPLATE = """{%% block %s %%}
@@ -160,47 +162,84 @@ class Mark(Extension):
         return out
 
 
-def content_filter(node, content):
+class JinjaFilter(BaseFilter):
     """
     This is the actual content filter called by :class:`exhibition.main.Node`
-    on appropiate nodes.
+    on appropriate nodes.
 
     :param node:
         The node being rendered
     :param content:
         The content of the node, stripped of any YAML frontmatter
     """
-    env = Environment(
-        loader=FileSystemLoader(node.meta["templates"]),
-        extensions=[RaiseError, Mark],
-        autoescape=True,
-    )
-    env.filters["pandoc"] = pandoc
-    env.filters["markdown"] = markdown
-    env.filters["metasort"] = metasort
-    env.filters["metaselect"] = metaselect
-    env.filters["metareject"] = metareject
-    typogrify_filters.register(env)
+    template_loader_class = FileSystemLoader
+    extensions = (RaiseError, Mark)
 
-    parts = []
+    def __init__(self, extra_filters=None):
+        """``extra_filters`` should be a dict. The keys are the name of the
+        filter and the values are the template filters"""
+        if extra_filters is None:
+            self.extra_filters = {}
+        else:
+            self.extra_filters = extra_filters
 
-    if node.meta.get("extends"):
-        parts.append(EXTENDS_TEMPLATE_TEMPLATE % node.meta["extends"])
+    def get_environment(self):
+        """Get Jinja environment
 
-    if node.meta.get("default_block"):
-        parts.extend([
-            START_BLOCK_TEMPLATE % node.meta["default_block"],
-            content,
-            END_BLOCK_TEMPLATE,
-        ])
-    else:
-        parts.append(content)
+        Sets up template loader and extensions
+        """
+        return Environment(
+            loader=self.template_loader_class(self.node.meta["templates"]),
+            extensions=self.extensions,
+            autoescape=True,
+        )
 
-    content = "".join(parts)
+    def add_template_filters(self, env):
+        """Add template filters to current Environment"""
+        env.filters["pandoc"] = pandoc
+        env.filters["markdown"] = markdown
+        env.filters["metasort"] = metasort
+        env.filters["metaselect"] = metaselect
+        env.filters["metareject"] = metareject
+        typogrify_filters.register(env)
 
-    template = env.from_string(content)
+        for name, flt in self.extra_filters.items():
+            env.filters[name] = flt
 
-    return template.render({
-        NODE_TMPL_VAR: node,
-        "time_now": datetime.now(timezone.utc),
-    })
+    def get_context_data(self):
+        """Returns context data that is used for rendering the template"""
+        return {
+            NODE_TMPL_VAR: self.node,
+            "time_now": datetime.now(timezone.utc),
+        }
+
+    def prepare_content(self):
+        """Prepares content by adding ``{% extends %}`` and a default block, if
+        either are specified"""
+        parts = []
+
+        if self.node.meta.get("extends"):
+            parts.append(EXTENDS_TEMPLATE_TEMPLATE % self.node.meta["extends"])
+
+        if self.node.meta.get("default_block"):
+            parts.extend([
+                START_BLOCK_TEMPLATE % self.node.meta["default_block"],
+                self.content,
+                END_BLOCK_TEMPLATE,
+            ])
+        else:
+            parts.append(self.content)
+
+        return "".join(parts)
+
+    def content_filter(self):
+        """Bring everything together and render the template"""
+        env = self.get_environment()
+        self.add_template_filters(env)
+
+        template = env.from_string(self.prepare_content())
+
+        return template.render(self.get_context_data())
+
+
+content_filter = JinjaFilter()

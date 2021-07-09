@@ -27,7 +27,9 @@ import pathlib
 from jinja2 import Markup
 from jinja2.exceptions import TemplateRuntimeError
 
+from exhibition.filters.base import content_filter as base_filter
 from exhibition.filters.external import content_filter as external_filter
+from exhibition.filters.jinja2 import JinjaFilter
 from exhibition.filters.jinja2 import content_filter as jinja_filter
 from exhibition.node import Node
 
@@ -107,6 +109,12 @@ METAREJECT_TEMPLATE = """
 {% for child in node.children.values()|metareject("bob") -%}
 {{ child.meta.bob }}
 {%- endfor %}
+""".strip()
+
+EMOJI_TEMPLATE = """
+{% filter emoji %}
+Hello
+{% endfilter %}
 """.strip()
 
 
@@ -393,3 +401,19 @@ class Jinja2TestCase(TestCase):
                 content = f.read()
 
             self.assertEqual(content, "<p>0</p><p>1</p><p>2</p>")
+
+    def test_custom_filter(self):
+        def template_filter(in_text):
+            return in_text.strip() + " 🖼️"
+        content_filter = JinjaFilter({"emoji": template_filter})
+        node = Node(mock.Mock(), None, meta={"templates": []})
+        node.is_leaf = False
+        result = content_filter(node, EMOJI_TEMPLATE)
+        self.assertEqual(result, "Hello 🖼️")
+
+
+class BaseFilterTestCase(TestCase):
+    def test_not_implemented(self):
+        node = Node(mock.Mock(), None, meta={})
+        with self.assertRaises(NotImplementedError):
+            base_filter(node, "")
