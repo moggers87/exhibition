@@ -26,6 +26,7 @@ import hashlib
 import pathlib
 
 from ruamel.yaml import YAML
+from ruamel.yaml.error import FileMark, MarkedYAMLError
 
 from .config import Config
 
@@ -38,6 +39,10 @@ DATA_EXTRACTORS = {
 
 DEFAULT_STRIP_EXTS = [".html"]
 DEFAULT_INDEX_FILE = "index.html"
+
+
+class FrontMatterNotFound(Exception):
+    pass
 
 
 class Node:
@@ -266,6 +271,37 @@ class Node:
                         return filter_module.content_filter(self, content)
         return content
 
+    def __read_frontmatter(self):
+        found_header = False
+        with self.path_obj.open("rb") as file_obj:
+            while True:
+                data = file_obj.read(100)
+                try:
+                    data = data.decode("utf-8")
+                except UnicodeDecodeError:
+                    raise FrontMatterNotFound
+
+                if data == '':
+                    # we've run out of file, either we didn't find a header or
+                    # we're missing a footer
+                    raise FrontMatterNotFound
+                elif not found_header:
+                    if data.startswith(self._meta_header):
+                        found_header = True
+                        found_meta = data[len(self._meta_header):]
+                    else:
+                        # if our token is not the first thing in the file, then
+                        # it's not for us
+                        raise FrontMatterNotFound
+                else:
+                    found_meta += data
+
+                if self._meta_footer in found_meta:
+                    idx = found_meta.index(self._meta_footer)
+                    found_meta = found_meta[:idx]
+                    break
+        return found_meta
+
     @cached_property
     def meta(self):
         """
@@ -280,37 +316,29 @@ class Node:
         if not self.is_leaf:
             return self.__meta
 
-        found_header = False
-        with self.path_obj.open("rb") as file_obj:
-            while True:
-                data = file_obj.read(100)
-                try:
-                    data = data.decode("utf-8")
-                except UnicodeDecodeError:
-                    return self.__meta
+        try:
+            frontmatter = self.__read_frontmatter()
+        except FrontMatterNotFound:
+            return self.__meta
 
-                if data == '':
-                    # we've run out of file, either we didn't find a header or
-                    # we're missing a footer
-                    return self.__meta
-                elif not found_header:
-                    if data.startswith(self._meta_header):
-                        found_header = True
-                        found_meta = data[len(self._meta_header):]
-                    else:
-                        # if our token is not the first thing in the file, then
-                        # it's not for us
-                        return self.__meta
-                else:
-                    found_meta += data
+        try:
+            self.__meta.load(frontmatter)
+        except MarkedYAMLError as exp:
+            exp.context_mark = FileMark(
+                name=str(self.path_obj),
+                index=exp.context_mark.index + len(self._meta_header),
+                line=exp.context_mark.line + 1,
+                column=exp.context_mark.column,
+            )
+            exp.problem_mark = FileMark(
+                name=str(self.path_obj),
+                index=exp.problem_mark.index + len(self._meta_header),
+                line=exp.problem_mark.line + 1,
+                column=exp.problem_mark.column,
+            )
+            raise exp
 
-                if self._meta_footer in found_meta:
-                    idx = found_meta.index(self._meta_footer)
-                    found_meta = found_meta[:idx]
-                    break
-
-        self.__meta.load(found_meta)
-        self.__content_start = len(self._meta_header) + len(found_meta) + len(self._meta_footer)
+        self.__content_start = len(self._meta_header) + len(frontmatter) + len(self._meta_footer)
 
         return self.__meta
 
