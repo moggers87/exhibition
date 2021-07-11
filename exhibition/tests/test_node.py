@@ -24,6 +24,8 @@ from unittest import TestCase
 import hashlib
 import pathlib
 
+from ruamel.yaml.error import MarkedYAMLError
+
 from exhibition.node import Node
 
 GOOD_META = """---
@@ -54,6 +56,18 @@ LONG_META = """---
 ---
 Some text
 """ % "\n".join(["thing%s: 1" % i for i in range(100)])
+
+INVALID_YAML = """
+make: an
+wish: [it's
+3: am
+""".strip()
+
+INVALID_YAML_META = """---
+%s
+---
+Some text
+""" % INVALID_YAML
 
 YAML_FILE = """
 thingy: 3
@@ -805,3 +819,35 @@ class NodeTestCase(TestCase):
         self.assertEqual(child1_node.full_url, "/index")
         self.assertEqual(child2_node.index_file, "blog.html")
         self.assertEqual(child2_node.full_url, "/")
+
+    def test_invalid_yaml(self):
+        path_meta = pathlib.Path(self.content_path.name, "meta.yaml")
+        with path_meta.open("w") as f:
+            f.write(INVALID_YAML)
+        path = pathlib.Path(self.content_path.name, "index.html")
+        with path.open("w") as f:
+            f.write(GOOD_META)
+
+        with self.assertRaises(MarkedYAMLError) as context:
+            Node.from_path(pathlib.Path(self.content_path.name))
+        self.assertEqual(context.exception.context_mark.line, 1)
+        self.assertEqual(context.exception.context_mark.column, 6)
+        self.assertEqual(context.exception.context_mark.name, str(path_meta))
+        self.assertEqual(context.exception.problem_mark.line, 2)
+        self.assertEqual(context.exception.problem_mark.column, 1)
+        self.assertEqual(context.exception.problem_mark.name, str(path_meta))
+
+    def test_invalid_yaml_meta(self):
+        path = pathlib.Path(self.content_path.name, "blog")
+        with path.open("w") as f:
+            f.write(INVALID_YAML_META)
+
+        node = Node(path, None)
+        with self.assertRaises(MarkedYAMLError) as context:
+            node.meta.keys()
+        self.assertEqual(context.exception.context_mark.line, 2)
+        self.assertEqual(context.exception.context_mark.column, 6)
+        self.assertEqual(context.exception.context_mark.name, str(path))
+        self.assertEqual(context.exception.problem_mark.line, 3)
+        self.assertEqual(context.exception.problem_mark.column, 1)
+        self.assertEqual(context.exception.problem_mark.name, str(path))
