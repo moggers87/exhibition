@@ -82,10 +82,10 @@ If you have found Exhibition to be useful and would like to see its continued
 development, please consider `buying me a coffee
 <https://ko-fi.com/moggers87>`__.
 
-.. |Build Status| image:: (https://github.com/moggers87/exhibition/actions/workflows/tests.yml/badge.svg
+.. |Build Status| image:: https://github.com/moggers87/exhibition/actions/workflows/tests.yml/badge.svg?branch=main
    :alt: Build Status
    :scale: 100%
-   :target: https://github.com/moggers87/exhibition/actions/workflows/tests.yml
+   :target: https://github.com/moggers87/exhibition/actions/workflows/tests.yml?query=branch%3Amain
 .. |Coverage| image:: https://codecov.io/github/moggers87/exhibition/coverage.svg?branch=main
    :target: https://codecov.io/github/moggers87/exhibition
    :alt: Coverage Status
