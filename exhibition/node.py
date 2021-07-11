@@ -39,6 +39,8 @@ DATA_EXTRACTORS = {
 
 DEFAULT_STRIP_EXTS = [".html"]
 DEFAULT_INDEX_FILE = "index.html"
+DEFAULT_DIR_MODE = 0o755
+DEFAULT_FILE_MODE = 0o644
 
 
 class FrontMatterNotFound(Exception):
@@ -53,9 +55,6 @@ class Node:
 
     _meta_header = "---\n"
     _meta_footer = "---\n"
-
-    _dir_mode = 0o755
-    _file_mode = 0o644
 
     def __init__(self, path, parent, meta=None):
         """
@@ -235,14 +234,18 @@ class Node:
         to ``deploy_path``
         """
         if not self.is_leaf:
-            pathlib.Path(self.full_path).mkdir(self._dir_mode)
+            dir_mode = self.meta.get("dir_mode", DEFAULT_DIR_MODE)
+            dir_obj = pathlib.Path(self.full_path)
+            dir_obj.mkdir()
+            dir_obj.chmod(dir_mode)
             return
 
+        file_mode = self.meta.get("file_mode", DEFAULT_FILE_MODE)
         file_obj = pathlib.Path(self.full_path)
-        file_obj.touch(self._file_mode)
 
         with file_obj.open("w" if type(self.content) is str else "wb") as fo:
             fo.write(self.content)
+        file_obj.chmod(file_mode)
 
     @cached_property
     def content(self):
