@@ -19,6 +19,7 @@
 #
 ##
 
+from stat import S_IFDIR, S_IFREG
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 import hashlib
@@ -26,7 +27,7 @@ import pathlib
 
 from ruamel.yaml.error import MarkedYAMLError
 
-from exhibition.node import Node
+from exhibition.node import DEFAULT_DIR_MODE, DEFAULT_FILE_MODE, Node
 
 GOOD_META = """---
 thingy: 3
@@ -210,8 +211,10 @@ class NodeTestCase(TestCase):
 
         self.assertFalse(pathlib.Path(child_node.full_path).exists())
         child_node.render()
-        self.assertTrue(pathlib.Path(child_node.full_path).exists())
-        self.assertTrue(pathlib.Path(child_node.full_path).is_dir())
+        rendered_child = pathlib.Path(child_node.full_path)
+        self.assertTrue(rendered_child.exists())
+        self.assertTrue(rendered_child.is_dir())
+        self.assertEqual(rendered_child.stat().st_mode, S_IFDIR + DEFAULT_DIR_MODE)
 
     def test_render_file(self):
         parent_path = pathlib.Path(self.content_path.name)
@@ -223,8 +226,10 @@ class NodeTestCase(TestCase):
 
         self.assertFalse(pathlib.Path(child_node.full_path).exists())
         child_node.render()
-        self.assertTrue(pathlib.Path(child_node.full_path).exists())
-        self.assertTrue(pathlib.Path(child_node.full_path).is_file())
+        rendered_child = pathlib.Path(child_node.full_path)
+        self.assertTrue(rendered_child.exists())
+        self.assertTrue(rendered_child.is_file())
+        self.assertEqual(rendered_child.stat().st_mode, S_IFREG + DEFAULT_FILE_MODE)
 
     def test_render_binary_file(self):
         parent_path = pathlib.Path(self.content_path.name)
@@ -851,3 +856,43 @@ class NodeTestCase(TestCase):
         self.assertEqual(context.exception.problem_mark.line, 3)
         self.assertEqual(context.exception.problem_mark.column, 1)
         self.assertEqual(context.exception.problem_mark.name, str(path))
+
+    def test_dir_mode(self):
+        settings = {
+            "dir_mode": 0o765,
+            "file_mode": 0o764,
+        }
+        settings.update(self.default_settings)
+        parent_path = pathlib.Path(self.content_path.name)
+        child_path = pathlib.Path(self.content_path.name, "blog")
+        child_path.mkdir()
+
+        parent_node = Node(parent_path, None, meta=settings)
+        child_node = Node(child_path, parent_node)
+
+        self.assertFalse(pathlib.Path(child_node.full_path).exists())
+        child_node.render()
+        rendered_child = pathlib.Path(child_node.full_path)
+        self.assertTrue(rendered_child.exists())
+        self.assertTrue(rendered_child.is_dir())
+        self.assertEqual(rendered_child.stat().st_mode, S_IFDIR + settings["dir_mode"])
+
+    def test_mode_file(self):
+        settings = {
+            "dir_mode": 0o765,
+            "file_mode": 0o764,
+        }
+        settings.update(self.default_settings)
+        parent_path = pathlib.Path(self.content_path.name)
+        child_path = pathlib.Path(self.content_path.name, "blog")
+        child_path.touch()
+
+        parent_node = Node(parent_path, None, meta=settings)
+        child_node = Node(child_path, parent_node)
+
+        self.assertFalse(pathlib.Path(child_node.full_path).exists())
+        child_node.render()
+        rendered_child = pathlib.Path(child_node.full_path)
+        self.assertTrue(rendered_child.exists())
+        self.assertTrue(rendered_child.is_file())
+        self.assertEqual(rendered_child.stat().st_mode, S_IFREG + settings["file_mode"])
