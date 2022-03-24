@@ -31,6 +31,7 @@ from exhibition.filters.base import content_filter as base_filter
 from exhibition.filters.external import content_filter as external_filter
 from exhibition.filters.jinja2 import JinjaFilter
 from exhibition.filters.jinja2 import content_filter as jinja_filter
+from exhibition.filters.markdown import content_filter as markdown_filter
 from exhibition.node import Node
 
 PLAIN_TEMPLATE = """
@@ -133,7 +134,7 @@ class ExternalCommandTestCase(TestCase):
             # default glob is *.*
             for filename in ["blog.html", "mytext.txt"]:
                 content = "hello {}, how are you?".format(filename)
-                path = pathlib.Path(content_path, "blog.htm")
+                path = pathlib.Path(content_path, filename)
                 with path.open("w") as f:
                     f.write(content)
 
@@ -143,7 +144,7 @@ class ExternalCommandTestCase(TestCase):
                              "filter": "exhibition.filters.external",
                              "external_cmd": "cat {INPUT} | base64 > {OUTPUT}"}))
                 node.render()
-                with pathlib.Path(deploy_path, "blog.htm").open("r") as f:
+                with pathlib.Path(deploy_path, filename).open("r") as f:
                     output = f.read()
 
                 expected_output = base64.b64encode(content.encode()).decode() + "\n"
@@ -417,3 +418,50 @@ class BaseFilterTestCase(TestCase):
         node = Node(mock.Mock(), None, meta={})
         with self.assertRaises(NotImplementedError):
             base_filter(node, "")
+
+
+class MarkdownFilterTestCase(TestCase):
+    def test_filter(self):
+        node = Node(mock.Mock(), None, meta={})
+        node.meta = node._Node__meta
+        content = "*hello!*"
+        output = markdown_filter(node, content)
+        self.assertEqual(output, "<p><em>hello!</em></p>")
+
+
+class MultipleFiltersTestCase(TestCase):
+    def build_and_render(self, filters=None):
+        with TemporaryDirectory() as content_path, TemporaryDirectory() as deploy_path:
+            content = "hello *how* are you?"
+            path = pathlib.Path(content_path, "blog.html")
+            with path.open("w") as f:
+                f.write(content)
+
+            node = Node(path, Node(path.parent, None,
+                        {"content_path": content_path,
+                         "deploy_path": deploy_path,
+                         "filter": filters,
+                         "external_cmd": "cat {INPUT} | tr 'A-Za-z' 'N-ZA-Mn-za-m' > {OUTPUT}"}))
+            node.render()
+            with pathlib.Path(deploy_path, "blog.html").open("r") as f:
+                return f.read()
+
+    def test_single_filter(self):
+        self.assertEqual(self.build_and_render("exhibition.filters.external"),
+                         "uryyb *ubj* ner lbh?")
+
+    def test_single_filter_as_list(self):
+        self.assertEqual(self.build_and_render(["exhibition.filters.external"]),
+                         "uryyb *ubj* ner lbh?")
+
+    def test_multiple_filters(self):
+        self.assertEqual(
+            self.build_and_render(["exhibition.filters.markdown", "exhibition.filters.external"]),
+            "<c>uryyb <rz>ubj</rz> ner lbh?</c>"
+        )
+
+    def test_multiple_globs(self):
+        self.assertEqual(
+            self.build_and_render([("exhibition.filters.external", ["*.*", "*.html"])]),
+            "uryyb *ubj* ner lbh?",
+        )
