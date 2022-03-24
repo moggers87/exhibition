@@ -259,19 +259,30 @@ class Node:
         with self.path_obj.open("rb") as file_obj:
             file_obj.seek(self.__content_start)
             content = file_obj.read()
-            try:
-                content = content.decode("utf-8")
-            except UnicodeDecodeError:
-                return content
+        try:
+            content = content.decode("utf-8")
+        except UnicodeDecodeError:
+            return content
 
-            if content_filter is not None:
-                filter_module = import_module(content_filter)
-                globs = self.meta.get("filter_glob", filter_module.DEFAULT_GLOB)
-                if not isinstance(globs, (list, tuple)):
-                    globs = [globs]
-                for filter_glob in globs:
-                    if self.path_obj in self.path_obj.parent.glob(filter_glob):
-                        return filter_module.content_filter(self, content)
+        if content_filter is None:
+            content_filter = []
+        elif not isinstance(content_filter, (list, tuple)):
+            content_filter = [(content_filter, self.meta.get("filter_glob", None))]
+
+        for item in content_filter:
+            if isinstance(item, (list, tuple)):
+                fltr, globs = item
+            else:
+                fltr = item
+                globs = None
+            filter_module = import_module(fltr)
+            if globs is None:
+                globs = filter_module.DEFAULT_GLOB
+            if not isinstance(globs, (list, tuple)):
+                globs = [globs]
+            for filter_glob in globs:
+                if self.path_obj in self.path_obj.parent.glob(filter_glob):
+                    content = filter_module.content_filter(self, content)
         return content
 
     def __read_frontmatter(self):

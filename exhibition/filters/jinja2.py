@@ -40,6 +40,7 @@ from pypandoc import convert_text as pandoc_func
 from typogrify.templatetags import jinja_filters as typogrify_filters
 
 from exhibition.filters.base import BaseFilter
+from exhibition.filters.markdown import DEFAULT_MD_KWARGS, MARKDOWN_META_CONFIG
 
 EXTENDS_TEMPLATE_TEMPLATE = """{%% extends "%s" %%}
 """
@@ -51,10 +52,6 @@ END_BLOCK_TEMPLATE = """{% endblock %}
 DEFAULT_GLOB = "*.html"
 
 NODE_TMPL_VAR = "node"
-
-DEFAULT_MD_KWARGS = {
-    "output_format": "html5",
-}
 
 DEFAULT_PANDOC_KWARGS = {
     "to": "html",
@@ -88,7 +85,7 @@ def markdown(ctx, text):
     kwargs = DEFAULT_MD_KWARGS.copy()
     node = ctx[NODE_TMPL_VAR]
 
-    kwargs.update(node.meta.get("markdown_config", {}))
+    kwargs.update(node.meta.get(MARKDOWN_META_CONFIG, {}))
 
     return md_func(text, **kwargs)
 
