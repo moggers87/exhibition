@@ -52,4 +52,5 @@ setup(
             "exhibit = exhibition.command:exhibition",
         ]
     },
+    include_package_data=True,
 )
