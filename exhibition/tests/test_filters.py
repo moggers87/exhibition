@@ -24,8 +24,8 @@ from unittest import TestCase, mock
 import base64
 import pathlib
 
-from jinja2 import Markup
 from jinja2.exceptions import TemplateRuntimeError
+from markupsafe import Markup
 
 from exhibition.filters.base import content_filter as base_filter
 from exhibition.filters.external import content_filter as external_filter
