@@ -8,6 +8,8 @@ Submodules
 
    exhibition.filters.external
    exhibition.filters.jinja2
+   exhibition.filters.markdown
+   exhibition.filters.pandoc
 
 Module contents
 ---------------

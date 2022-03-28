@@ -41,6 +41,8 @@ from typogrify.templatetags import jinja_filters as typogrify_filters
 
 from exhibition.filters.base import BaseFilter
 from exhibition.filters.markdown import DEFAULT_MD_KWARGS, MARKDOWN_META_CONFIG
+from exhibition.filters.pandoc import (DEFAULT_PANDOC_KWARGS, PANDOC_META_CONFIG,
+                                       PandocMissingFormatError)
 
 EXTENDS_TEMPLATE_TEMPLATE = """{%% extends "%s" %%}
 """
@@ -52,10 +54,6 @@ END_BLOCK_TEMPLATE = """{% endblock %}
 DEFAULT_GLOB = "*.html"
 
 NODE_TMPL_VAR = "node"
-
-DEFAULT_PANDOC_KWARGS = {
-    "to": "html",
-}
 
 
 def metasort(nodes, key=None, reverse=False):
@@ -92,13 +90,20 @@ def markdown(ctx, text):
 
 @contextfilter
 def pandoc(ctx, text, fmt=None):
+    """Use Pandoc to convert from one format to another. Takes source format as
+    an optional argument.
+
+    Uses the same ``pandoc_config`` meta key as :mod:`exhibition.filters.pandoc`
+    """
     kwargs = DEFAULT_PANDOC_KWARGS.copy()
     node = ctx[NODE_TMPL_VAR]
 
-    kwargs.update(node.meta.get("pandoc_config", {}))
+    kwargs.update(node.meta.get(PANDOC_META_CONFIG, {}))
 
     if fmt is not None:
         kwargs["format"] = fmt
+    elif kwargs.get("format") is None:
+        raise PandocMissingFormatError("You must specify a format, see documentation")
 
     return pandoc_func(text, **kwargs)
 
