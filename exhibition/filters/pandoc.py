@@ -20,24 +20,32 @@
 ##
 
 """
-Markdown filter
+Pandoc filter
 
 To use, add the following to your configuration file:
 
 .. code-block:: yaml
 
-   filter: exhibition.filters.markdown
+   filter: exhibition.filters.pandoc
+   pandoc_config:
+     format: org
+
+``format`` can be any format that Pandoc supports
 """
 
-from markdown import markdown
+from pypandoc import convert_text
 
 DEFAULT_GLOB = "*.html"
 
-DEFAULT_MD_KWARGS = {
-    "output_format": "html5",
+PANDOC_META_CONFIG = "pandoc_config"
+
+DEFAULT_PANDOC_KWARGS = {
+    "to": "html",
 }
 
-MARKDOWN_META_CONFIG = "markdown_config"
+
+class PandocMissingFormatError(TypeError):
+    pass
 
 
 def content_filter(node, content):
@@ -50,6 +58,8 @@ def content_filter(node, content):
     :param content:
         The content of the node, stripped of any YAML frontmatter
     """
-    kwargs = DEFAULT_MD_KWARGS.copy()
-    kwargs.update(node.meta.get(MARKDOWN_META_CONFIG, {}))
-    return markdown(content, **kwargs)
+    kwargs = DEFAULT_PANDOC_KWARGS.copy()
+    kwargs.update(node.meta.get(PANDOC_META_CONFIG, {}))
+    if kwargs.get("format") is None:
+        raise PandocMissingFormatError("You must specify a format, see documentation")
+    return convert_text(content, **kwargs)

@@ -46,7 +46,7 @@ OUTPUT_KEY = "OUTPUT"
 def content_filter(node, content):
     """
     This is the actual content filter called by :class:`exhibition.main.Node`
-    on appropiate nodes.
+    on appropriate nodes.
 
     :param node:
         The node being rendered

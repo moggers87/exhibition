@@ -32,6 +32,8 @@ from exhibition.filters.external import content_filter as external_filter
 from exhibition.filters.jinja2 import JinjaFilter
 from exhibition.filters.jinja2 import content_filter as jinja_filter
 from exhibition.filters.markdown import content_filter as markdown_filter
+from exhibition.filters.pandoc import PandocMissingFormatError
+from exhibition.filters.pandoc import content_filter as pandoc_filter
 from exhibition.node import Node
 
 PLAIN_TEMPLATE = """
@@ -284,21 +286,19 @@ class Jinja2TestCase(TestCase):
             "\nHello\n=====\n\nThis *is* **text**\n",
             "\n# Hello\n\nThis *is* **text**\n",
         ]
-        meta = {"templates": []}
+        meta = {"templates": [], "pandoc_config": {"format": "org", "to": "markdown"}}
         node = Node(mock.Mock(), None, meta=meta)
         node.is_leaf = False
 
-        # First test with no arguments at all.
-        self.assertRaises(
-            TypeError,
-            jinja_filter,
-            node,
-            PANDOC_TEMPLATE_WITHOUT_ARG
-        )
-
-        node.meta["pandoc_config"] = {"format": "org", "to": "markdown"}
         result = jinja_filter(node, PANDOC_TEMPLATE_WITHOUT_ARG)
         self.assertIn(result, possible_markdown_outputs)
+
+    def test_pandoc_filter_no_format_exception(self):
+        meta = {"templates": []}
+        node = Node(mock.Mock(), None, meta=meta)
+        node.is_leaf = False
+        with self.assertRaises(PandocMissingFormatError):
+            jinja_filter(node, PANDOC_TEMPLATE_WITHOUT_ARG)
 
     def test_typogrify_filter(self):
         node = Node(mock.Mock(), None, meta={"templates": []})
@@ -427,6 +427,25 @@ class MarkdownFilterTestCase(TestCase):
         content = "*hello!*"
         output = markdown_filter(node, content)
         self.assertEqual(output, "<p><em>hello!</em></p>")
+
+
+class PandocFilterTestCase(TestCase):
+    def test_filter(self):
+        node = Node(mock.Mock(), None, meta={"pandoc_config": {"format": "org"}})
+        node.meta = node._Node__meta
+        content = "* Hello\n\nThis /is/ *text*"
+        output = pandoc_filter(node, content)
+        self.assertEqual(
+            output,
+            "<h1 id=\"hello\">Hello</h1>\n<p>This <em>is</em> <strong>text</strong></p>\n"
+        )
+
+    def test_missing_format(self):
+        node = Node(mock.Mock(), None, meta={})
+        node.meta = node._Node__meta
+        content = "* Hello\n\nThis /is/ *text*"
+        with self.assertRaises(PandocMissingFormatError):
+            pandoc_filter(node, content)
 
 
 class MultipleFiltersTestCase(TestCase):
