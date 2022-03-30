@@ -105,6 +105,16 @@ Specify the name file name of the "index" file for a directory. By default this
 is ``index.html``, as it is on most web servers. If you change this settings,
 be sure to update your web server's configuration to reflect this change.
 
+``dir_mode``
+^^^^^^^^^^^^
+
+Specify the permissions of the directories created when generating the site. Default value is ``0o755``.
+
+``file_mode``
+^^^^^^^^^^^^^
+
+Specify the permissions of the files created when generating the site. Default value is ``0o644``.
+
 Filters
 -------
 
@@ -113,7 +123,24 @@ Filters
 
 The dotted path notation that Exhibition can import to process content on a node.
 
-Exhibition comes with one filter: ``exhibition.filters.jinja2``
+Exhibition comes with a number of filters, such as ``exhibition.filters.jinja2``.
+
+.. code-block:: yaml
+
+   filter: exhibition.filters.jinja2
+
+You can also specify multiple filters, like this:
+
+.. code-block:: yaml
+
+   filter:
+     - exhibition.filters.jinja2
+     - - exhibition.filters.external
+       - "*.jpeg"
+   external_cmd: "cat {INPUT} | exiftool - > {OUTPUT}"
+
+Here you can see that the jinja2 filter will be applied using its default glob
+(``*.html``) and the external command filter will be applied to JPEG images.
 
 ``filter_glob``
 ^^^^^^^^^^^^^^^
@@ -137,6 +164,8 @@ patterns:
 
 Filters specify their own default glob, refer to the documentation of that
 filter to find out what that is.
+
+``filter_glob`` is ignored if ``filter`` is a list of filters.
 
 Jinja2
 ^^^^^^
@@ -163,6 +192,13 @@ If specified, this will wrap the file content in ``{% block %}``.
 Markdown options as specified in the `Markdown documentation
 <https://python-markdown.github.io/reference/#markdown>`_.
 
+``pandoc_config``
+~~~~~~~~~~~~~~~~~~~
+
+Pandoc options as specified in the `PyPandoc documentation
+<https://github.com/NicklasTegner/pypandoc#usage>`_ for the ``convert_text``
+function.
+
 External Command
 ^^^^^^^^^^^^^^^^
 
@@ -175,6 +211,25 @@ The command to run. This should use the placeholders ``{INPUT}`` and
 .. code-block:: yaml
 
    external_cmd: "cat {INPUT} | sort > {OUTPUT}"
+
+Markdown
+^^^^^^^^
+
+``markdown_config``
+~~~~~~~~~~~~~~~~~~~
+
+Markdown options as specified in the `Markdown documentation
+<https://python-markdown.github.io/reference/#markdown>`_.
+
+Pandoc
+^^^^^^
+
+``pandoc_config``
+~~~~~~~~~~~~~~~~~~~
+
+Pandoc options as specified in the `PyPandoc documentation
+<https://github.com/NicklasTegner/pypandoc#usage>`_ for the ``convert_text``
+function.
 
 Cache busting
 -------------

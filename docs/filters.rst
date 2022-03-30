@@ -39,7 +39,7 @@ There are some meta options that are used exclusively by Jinja2:
 Markdown
 ^^^^^^^^
 
-``markdown`` is provided as a filter and it can be configured via the
+``markdown`` is provided as a Jinja2 filter and it can be configured via the
 ``markdown_config`` meta variable, which is passed to the markdown function as
 keyword arguments.
 
@@ -48,7 +48,7 @@ Please view the `Markdown documentation <https://python-markdown.github.io/>`_ f
 Pandoc
 ^^^^^^
 
-``pandoc`` is provided as a filter and can be configured by the
+``pandoc`` is provided as a Jinja2 filter and can be configured by the
 ``pandoc_config`` meta variable, which is passed to the convert_text function
 as keyword arguments.
 
@@ -177,6 +177,28 @@ input file and ``{OUTPUT}`` as the output file, for example:
     external_cmd: "cat {INPUT} | base64 > {OUTPUT}"
 
 Unless it is set, ``filter_glob`` will default to ``*.*`` for this filter.
+
+Markdown
+--------
+
+The Markdown filter is a simple filter for those who don't want to use Jinja2.
+
+This filter can be configured via the ``markdown_config`` meta key, which is
+passed to the markdown function as keyword arguments.
+
+Please view the `Markdown documentation <https://python-markdown.github.io/>`_ for details.
+
+Pandoc
+------
+
+The Pandoc filter is a simple filter that can a file from one format to
+another, e.g. rendering a LaTeX document to a PDF. It can be configured by the
+``pandoc_config`` meta variable, which is passed to the convert_text function
+as keyword arguments.
+
+Please refer `pypandoc project <https://github.com/bebraw/pypandoc>`_ for details.
+
+Note, pypandoc requires pandoc to be installed. It will error without it.
 
 Make Your Own
 -------------
