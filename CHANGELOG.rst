@@ -1,7 +1,40 @@
+.. _zero-two-two:
+
+0.2.2
+-----
+
+Added
+~~~~~
+
+- Add pandoc and markdown content filters
+- Add file and directory permission configuration
+- Add support for specifying multiple filters at a time
+- Add Python 3.10 support
+- Add support for Jinja2 version 3.0.x
+
+Changed
+~~~~~~~
+
+- Change Jinja2 content filter from a function to a class
+
+  - Custom filters can now inherit from this class if they wish
+
+Fixed
+~~~~~
+
+- Fix site template not being part of Python package
+
+Removed
+~~~~~~~
+
+- Removed tests against Jinja2 version 2.9
+
+  - It might still work, but we don't consider any breakages to be bugs.
+
 .. _zero-two-one:
 
 0.2.1
-~~~~~
+-----
 
 This release is just for a fix some bad syntax in our documentation. Nothing
 else has changed!
