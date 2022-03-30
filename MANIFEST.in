@@ -1,2 +1,3 @@
 include versioneer.py
 include exhibition/_version.py
+graft exhibition/data

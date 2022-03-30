@@ -1,3 +1,13 @@
+.. _zero-two-three:
+
+0.2.3
+-----
+
+Fixed
+~~~~~
+
+- Add missing data files to package manifest
+
 .. _zero-two-two:
 
 0.2.2
