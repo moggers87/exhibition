@@ -7,22 +7,20 @@ on:
   push:
     branches:
       - main
-  schedule:
-    - cron: '01 07 * * 1'
 
 jobs:
   unit-tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install pandoc on Mac
@@ -36,7 +34,7 @@ jobs:
       - name: Run tox
         run: tox
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v4
 
   misc:
     runs-on: ubuntu-latest
@@ -44,11 +42,11 @@ jobs:
       matrix:
         tox_env: [flake8, isort, docs]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
+          python-version: "3.12"
       - name: Install tox
         run: pip install tox
       - name: Run tox
