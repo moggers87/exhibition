@@ -31,7 +31,7 @@ To use, add the following to your configuration file:
 
 from datetime import datetime, timezone
 
-from jinja2 import Environment, FileSystemLoader, contextfilter
+from jinja2 import Environment, FileSystemLoader, pass_context
 from jinja2.exceptions import TemplateRuntimeError
 from jinja2.ext import Extension
 from jinja2.nodes import CallBlock, Const, ContextReference
@@ -78,7 +78,7 @@ def metareject(nodes, key):
             yield n
 
 
-@contextfilter
+@pass_context
 def markdown(ctx, text):
     kwargs = DEFAULT_MD_KWARGS.copy()
     node = ctx[NODE_TMPL_VAR]
@@ -88,7 +88,7 @@ def markdown(ctx, text):
     return md_func(text, **kwargs)
 
 
-@contextfilter
+@pass_context
 def pandoc(ctx, text, fmt=None):
     """Use Pandoc to convert from one format to another. Takes source format as
     an optional argument.
