@@ -37,7 +37,7 @@ from jinja2.ext import Extension
 from jinja2.nodes import CallBlock, Const, ContextReference
 from markdown import markdown as md_func
 from pypandoc import convert_text as pandoc_func
-from typogrify.templatetags import jinja_filters as typogrify_filters
+from typogrify.filters import amp, caps, initial_quotes, smartypants, titlecase, typogrify, widont
 
 from exhibition.filters.base import BaseFilter
 from exhibition.filters.markdown import DEFAULT_MD_KWARGS, MARKDOWN_META_CONFIG
@@ -203,7 +203,14 @@ class JinjaFilter(BaseFilter):
         env.filters["metasort"] = metasort
         env.filters["metaselect"] = metaselect
         env.filters["metareject"] = metareject
-        typogrify_filters.register(env)
+        # typogriphy filters
+        env.filters['amp'] = amp
+        env.filters['caps'] = caps
+        env.filters['initial_quotes'] = initial_quotes
+        env.filters['smartypants'] = smartypants
+        env.filters['titlecase'] = titlecase
+        env.filters['typogrify'] = typogrify
+        env.filters['widont'] = widont
 
         for name, flt in self.extra_filters.items():
             env.filters[name] = flt
