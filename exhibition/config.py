@@ -79,9 +79,7 @@ class Config:
     def from_path(cls, path):
         """Load YAML data from a file"""
         with open(path) as f:
-            obj = cls(f)
-
-        return obj
+            return cls(f)
 
     def get_name(self):
         if self.node is None:

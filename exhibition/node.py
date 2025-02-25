@@ -318,9 +318,7 @@ class Node:
 
                 if self._meta_footer in found_meta:
                     idx = found_meta.index(self._meta_footer)
-                    found_meta = found_meta[:idx]
-                    break
-        return found_meta
+                    return found_meta[:idx]
 
     @cached_property
     def meta(self):
@@ -384,9 +382,7 @@ class Node:
             return
 
         func = DATA_EXTRACTORS[self.path_obj.suffix]
-        data = func(self.content)
-
-        return data
+        return func(self.content)
 
     def add_child(self, child):
         """
@@ -433,6 +429,4 @@ class Node:
 
     @property
     def index_file(self):
-        index_file = self.meta.get("index_file", DEFAULT_INDEX_FILE)
-
-        return index_file
+        return self.meta.get("index_file", DEFAULT_INDEX_FILE)

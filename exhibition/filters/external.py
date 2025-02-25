@@ -69,6 +69,4 @@ def content_filter(node, content):
     subprocess.run(cmd, shell=True)
 
     with output_file.open("r") as f:
-        output = f.read()
-
-    return output
+        return f.read()
