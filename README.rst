@@ -1,4 +1,4 @@
-|Build Status| |Coverage| |docs|
+|docs|
 
 Exhibition - A Python Static Site Generator
 ===========================================
@@ -22,7 +22,7 @@ Where?
 ------
 
 - Download: https://pypi.org/project/exhibition/
-- Source: https://github.com/moggers87/exhibition
+- Source: https://codeberg.org/moggers87/exhibition
 - Docs: https://exhibition-ssg.readthedocs.io/en/latest/
 
 License?
@@ -50,11 +50,6 @@ What's the status of this project?
 There are tests, there's some documentation, and I currently use it for a
 number of websites, including my personal blog.
 
-Please feel free to add your site to `the wiki`_ if it uses Exhibition, but
-please make sure its safe for work and not covered in adverts.
-
-.. _`the wiki`: https://github.com/moggers87/exhibition/wiki
-
 Contributions
 ^^^^^^^^^^^^^
 
@@ -70,7 +65,7 @@ The Exhibition project has adopted the Contributor Covenant Code version 1.4. By
 contributing to this project, you agree to abide by its terms.
 
 The full text of the code of conduct can be found `here
-<https://github.com/moggers87/exhibition/blob/main/CODE_OF_CONDUCT.md>`__
+<https://codeberg.org/moggers87/exhibition/src/branch/main/CODE_OF_CONDUCT.md>`__
 
 
 .. inclusion-marker-do-not-remove-end
@@ -82,14 +77,6 @@ If you have found Exhibition to be useful and would like to see its continued
 development, please consider `buying me a coffee
 <https://ko-fi.com/moggers87>`__.
 
-.. |Build Status| image:: https://github.com/moggers87/exhibition/actions/workflows/tests.yml/badge.svg?branch=main
-   :alt: Build Status
-   :scale: 100%
-   :target: https://github.com/moggers87/exhibition/actions/workflows/tests.yml?query=branch%3Amain
-.. |Coverage| image:: https://codecov.io/github/moggers87/exhibition/coverage.svg?branch=main
-   :target: https://codecov.io/github/moggers87/exhibition
-   :alt: Coverage Status
-   :scale: 100%
 .. |docs| image:: https://readthedocs.org/projects/exhibition-ssg/badge/?version=latest
    :alt: Documentation Status
    :scale: 100%

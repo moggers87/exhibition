@@ -13,7 +13,7 @@ setup(
     author_email="moggers87+git@moggers87.co.uk",
     description="A Python static site generator",
     long_description=long_desc,
-    url="https://github.com/moggers87/exhibition",
+    url="https://codeberg.org/moggers87/exhibition",
     download_url="https://pypi.org/project/exhibition/",
     packages=find_packages(),
     test_suite="exhibition.tests",
