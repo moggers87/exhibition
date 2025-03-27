@@ -1,7 +1,11 @@
 |docs|
 
-Exhibition - A Python Static Site Generator
-===========================================
+Exhibition has moved!
+=====================
+
+Please join us at https://codeberg.org/moggers87/exhibition
+
+This repo will be kept here in read-only mode for people are installing via git.
 
 .. inclusion-marker-do-not-remove-start
 
